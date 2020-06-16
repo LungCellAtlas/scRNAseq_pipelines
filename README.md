@@ -1,7 +1,6 @@
-The single cell data for the Lung Cell Atlas is generated in a wide variety of centers, at different moments in time, and the data has been preprocessed in different manners so far (different software and versions etc.).  
-For the comprehensive analysis of the Lung Cell Atlas datasets, the data should be preprocessed in a uniform manner, to omit non-biological differences between the datasets.  
-Due to data protection laws, the raw data cannot be shared. Therefore the basic processing needs to be accomplished in the individual centers.  
-After this step, results can be shared excluding all data (bam files) suitable for identification of the donors.
+## Why a Lung Cell Atlas scRNAseq pipeline?
+
+The single cell data for the Lung Cell Atlas is generated in a wide variety of centers, at different moments in time, and is preprocessed with different pipelines. For the comprehensive analysis of the Lung Cell Atlas datasets, we would like to process all data in a uniform manner, thus eliminating differences between the datasets due to differences in data processing. Since we often cannot freely share fastq files between centers because of data protection legislation, it is impossible to gather all the sequencing data at one center and run the same pipeline on all data there. Hence we built a stable pipeline with fixed software and versioning that can be easily installed at any institute, on any linux machine, that processes fastqs into count matrices with only one command in the command line. The output count matrices can then be shared, thereby avoiding sharing of private fastqs or bam files. Thus our pipeline will enable harmonization of data processing between research centers for the Lung Cell Atlas.
 
 ## Pipeline description
 The pipeline has been developed by the [Bioinformatics Core Facility](https://www.helmholtz-muenchen.de/bi) at HMGU using [nextflow](https://www.nextflow.io) and [DolphinNext](https://dolphinnext.readthedocs.io/).  
