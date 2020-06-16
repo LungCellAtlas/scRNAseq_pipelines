@@ -1,6 +1,9 @@
 #!/bin/bash
 # A: Lisa Sikkema, 2020
-# D: testrun Lung Cell Atlas cellranger pipeline
+# D: run Lung Cell Atlas cellranger pipeline
+
+
+### NOTE TO LISA: COPIES ENTIRE TESTRUN SCRIPT, NOW ADAPT TO ACTUAL RUN!
 
 
 # parameter defaults: 
@@ -21,14 +24,21 @@ profile=""
 conda_env_dir_path=""
 # sitename (-s flag)
 sitename=""
+# dataset name (-n flag)
+dataset_name=""
 # upload files to Helmholtz secure folder, boolean:
 upload=""
 # clusterOptions:
 ClusterOptions=""
 # queue
 queue=""
+# output directory name
+outdir=""
+# path to xls file with sample info:
+path_to_sample_table=""
 # upload link to Helmholtz NextCloud secure storage:
 upload_link=""
+
 
 
 usage() {
@@ -55,6 +65,8 @@ usage() {
 						for naming the output file of the testrun, which 
 						will automatically be transfered to the Helmholtz 
 						server if -u is set to "true".
+		-n <dataset_name>			Name of dataset. This will be added to the
+						output file name, so that identity of file is clear. 
 		-u <true|false>			whether to automatically upload the testrun 
 						output to the the Helmholtz secure server
 		-l <upload_link> 		only mandatory if u==true. Link that
@@ -62,6 +74,19 @@ usage() {
 						.bam and .bai files) to secure Helmholtz storage.
 						This link will be provided to you by your LCA 
 						contact person.
+		-o <output_dir_name>			name of output directory, or full path to 
+						output directory. If directory does not exist yet,
+						it will be created. Output of pipeline will be stored 
+						in this directory. 
+
+		-x <path_to_sample_table_file>	path to the file that contains a table
+						the required sample information. For more detailed
+						instructions on what the file should look like, 
+						check the LCA_pipeline GitHub Readme.
+						Alternatively, and if you have run the pipeline 
+						testrun script before, you can check out the .xls 
+						example files in the 
+						sc_processing_cellranger/samplefiles folder.
 
  		Optional arguments specifying resources:
  		-c <n_cores_cr>			number of cores to be used by cellranger 
@@ -95,7 +120,7 @@ HELP_USAGE
 # go through optional arguments:
 # preceding colon after getopts: don't allow for any automated error messages
 # colon following flag letter: this flag requires an argument
-while getopts ":hp:e:s:c:m:t:q:u:l:C:" opt; do
+while getopts ":hp:e:s:n:c:m:t:q:u:l:o:x:C:" opt; do
 	# case is bash version of 'if' that allows for multiple scenarios
 	case "$opt" in
 		# if h is added, print usage and exit
@@ -108,6 +133,8 @@ while getopts ":hp:e:s:c:m:t:q:u:l:C:" opt; do
 			;;
 		s ) sitename=$OPTARG
 			;;
+		n ) dataset_name=$OPTARG
+			;;
 		c ) localcores=$OPTARG
 			;;
 		m ) localmemGB=$OPTARG
@@ -119,6 +146,10 @@ while getopts ":hp:e:s:c:m:t:q:u:l:C:" opt; do
 		u ) upload=$OPTARG
 			;;
 		l ) upload_link=$OPTARG
+			;;
+		o ) outdir=$OPTARG
+			;;
+		x ) path_to_sample_table=$OPTARG
 			;;
 		C ) ClusterOptions=$OPTARG
 			;;
@@ -174,6 +205,11 @@ else
 	# convert to uppercase:
 	sitename=${sitename^^}
 fi
+# check if dataset name was provided:
+if [ -z $dataset_name ]; then
+	echo "No dataset name provided. Dataset_name should be provided under flag -n. Exiting."
+	exit 1
+fi
 # check if -u argument is either true or false.
 # first check if any argument was provided:
 if [ -z $upload ]; then
@@ -192,6 +228,23 @@ if [ $upload == true ] && [ -z $upload_link ]; then
 	echo "-u is set to true, but no upload link was provided under -l. Exiting."
 	exit 1
 fi
+# check if argument was provided for outdir:
+if [ -z $outdir ]; then
+	echo "no argument was provided under the -o flag. it should be set to the name of the output dir."
+	echo "Exiting."
+	exit 1
+fi
+
+# check if argument was provided for path to sample.xls file
+if [ -z $path_to_sample_table ]; then
+	echo "no argument was provided for the -x flag. It should be set to the path for your sample.xls file. Exiting."
+	exit 1
+fi
+# if an argument was provided, check if it leads to an actual file:
+if ! [ -f $path_to_sample_table ]; then
+	echo "path to sample.xls file provided under -x flag does not lead to a file. Correct path. Exiting."
+	exit 1
+fi
 
 # check if script is run from a secure server:
 # let user confirm parameters:
@@ -204,20 +257,13 @@ else
 	exit 1
 fi
 
-# check if directory run/testrun already exists
-if [ -d sc_processing_cellranger/testrun ]; then
-	echo "directory './sc_processing_cellranger/testrun' already exists. Please remove testrun directory. Exiting."
-	exit 1
-fi
-
-
 
 
 # Log filenname
-LOGFILE="LCA_pipeline_testrun.log"
+LOGFILE="LCA_pipeline_run.log"
 # check if logfile already exists:
 if [ -f ${LOGFILE} ]; then
-    echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exit."
+    echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exit." 
     exit 1
 fi
 
@@ -228,7 +274,10 @@ echo "PARAMETERS:" | tee -a ${LOGFILE}
 echo "upload output files to Helmholtz server automatically: ${upload}"
 echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_thr}, localmemGB: ${localmemGB}" | tee -a ${LOGFILE}
 echo "profile: ${profile}" | tee -a ${LOGFILE}
+echo "output dir: ${outdir}" | tee -a ${LOGFILE}
+echo "file with sample information: ${path_to_sample_table}" | tee -a ${LOGFILE}
 echo "sitename provided: ${sitename}" | tee -a ${LOGFILE}
+echo "dataset name provided: ${dataset_name}" | tee -a ${LOGFILE}
 echo "path to conda environment directory provided: ${conda_env_dir_path}" | tee -a ${LOGFILE}
 
 # let user confirm parameters:
@@ -241,27 +290,41 @@ else
 	exit 1
 fi
 
+# store start directory:
+startdir=`pwd`
 
 # cd into sc_processing_cellranger folder
 cd sc_processing_cellranger
 
 # print present working directory, it should be sc_processing_cellranger
-echo "(Current working directory should be sc_processing_cellranger" | tee -a ../${LOGFILE}
-echo "pwd: `pwd`)" | tee -a ../${LOGFILE}
+echo "(Current working directory should be sc_processing_cellranger" | tee -a ${startdir}/${LOGFILE}
+echo "pwd: `pwd`)" | tee -a ${startdir}/${LOGFILE}
 
-# creating directory for testrun now:
-mkdir -p testrun/run
-echo "directory for testrun created: `pwd`/testrun/run" | tee -a ../${LOGFILE}
+# check if outdir already exists
+if ! [ -d $outdir ]; then
+	echo "creating output directory: $outdir" | tee -a ${startdir}/${LOGFILE}
+	mkdir $outdir
+fi
+# cd into output directory
+cd $outdir
+# store full path of output directory (in case outdir was only relative path)
+outdir_full=`pwd`
 
-# cd into testrun directory
-cd testrun/run
+# check if run directory already exists in outdir:
+if [ -d pipelinerun ]; then
+	echo "There is already a directory named 'pipelinerun' in your outdir '${outdir}'! Remove it or change outdir under flag -o. Exiting." | tee -a ${startdir}/${LOGFILE}
+	exit 1
+fi
+# create directory called pipelinerun/run and cd into it
+mkdir -p pipelinerun/run
+cd pipelinerun/run
 
 # activate environment. Since the command conda activate doesn't (always?) work
 # in subshell, we first want to use source:
 path_to_conda_sh=$(conda info --base)/etc/profile.d/conda.sh
 source $path_to_conda_sh 
 # now we can activate environment
-echo "Activating conda environment...." | tee -a ../../../${LOGFILE}
+echo "Activating conda environment...." | tee -a ${startdir}/${LOGFILE}
 conda activate $conda_env_dir_path # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
 
 # prepare extra arguments for nextflow command
@@ -273,31 +336,34 @@ if ! [ -z "$ClusterOptions" ]; then
 	nf_add_arguments="${nf_add_arguments} --clusterOpt '${ClusterOptions}'"
 fi
 # now run nextflow command:
-echo "Running nextflow command now.... Start time nf run: `date`" | tee -a ../../../${LOGFILE}
+echo "Running nextflow command now.... Start time nf run: `date`" | tee -a ${startdir}/${LOGFILE}
 # try running nextflow from subshell...
 (
-nextflow run ../../nfpipeline/sc_processing_r7.nf -profile $profile -c ../../nfpipeline/nextflow.config --outdir '../' --samplesheet '../../samplefiles/Samples_testdata.xls' --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
-) | tee -a ../../../${LOGFILE} 
-echo "Done. End time nf run: `date`" | tee -a ../../../${LOGFILE}
+nextflow run ${startdir}/sc_processing_cellranger/nfpipeline/sc_processing_r7.nf -profile $profile -c ${startdir}/sc_processing_cellranger/nfpipeline/nextflow.config --outdir $outdir_full/pipelinerun/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
+) | tee -a ${startdir}/${LOGFILE} 
+echo "Done. End time nf run: `date`" | tee -a ${startdir}/${LOGFILE}
 
-# move back to root folder
-cd ../..
-# and zip the result of the testrun. Include the date and time in the file name, 
+# move back to outdir (i.e. not 'pipelinerun/run/' dir but the one above)
+cd $outdir_full
+
+# and zip the result of run. Include the date and time in the file name, 
 # so we can distinguish between different testruns.
 date_today_long=`date '+%Y%m%d_%H%M'`
-echo "Compressing the output of your testrun into the file ${sitename}_${date_today_long}.testrun.tar.gz..." | tee -a ../${LOGFILE}
+echo "Compressing the output of your pipeline run into the file: \
+$outdir_full${sitename}_${dataset_name}_${date_today_long}.tar.gz \
+excluding .bam and .bai files, and excluding ./run direcory..." | tee -a ${startdir}/${LOGFILE}
 # note that folder names/paths are considered relative to the folder to tar. 
-# so --exlude=run actually means --exclude=./testrun/run, from the perspective of our current dir!
-tar --exclude='*.bam' --exclude='*.bai' --exclude=run -czvf ${sitename}_${date_today_long}.testrun.tar.gz  ./testrun | tee -a ../${LOGFILE}
-echo "Done" | tee -a ../${LOGFILE}
+# so --exlude=run actually means --exclude=$outdir_full/pipelinerun/run!
+tar --exclude="*.bam" --exclude="*.bai" --exclude=run -czvf ${sitename}_${dataset_name}_${date_today_long}.tar.gz  "$outdir_full/pipelinerun" | tee -a ${startdir}/${LOGFILE}
+echo "Done" | tee -a ${startdir}/${LOGFILE}
 
 # now upload the output to Helmholtz Nextcloud
 # CHECK WHERE FINAL CLOUDSEND.SH PATH WILL BE!! AND IF WE NEED TO CHMOD
 if [ $upload == true ]; then
-	echo "We will now upload output to Helmholtz secure folder" | tee -a ../${LOGFILE}
-	../cloudsend.sh ./${sitename}_${date_today_long}.testrun.tar.gz $upload_link 2>&1 | tee -a ../${LOGFILE} # redirect output of shellscript to logfile
+	echo "We will now upload output to Helmholtz secure folder" | tee -a ${startdir}/${LOGFILE}
+	${startdir}/cloudsend.sh ${sitename}_${dataset_name}_${date_today_long}.tar.gz $upload_link 2>&1 | tee -a ${startdir}/${LOGFILE} # redirect output of shellscript to logfile
 fi
 
 # end
-echo "End of script!" | tee -a ../${LOGFILE}
+echo "End of script!" | tee -a ${startdir}/${LOGFILE}
 

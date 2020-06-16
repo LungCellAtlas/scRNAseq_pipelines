@@ -295,7 +295,7 @@ if [ $build_ref_genome == true ]; then
 	echo "This might take a few hours. Start time: `date`" | tee -a ../../${LOGFILE}
 	echo "For a detailed log of the genome building, check out the logfile in your sc_processing_cellranger/refgenomes folder!" | tee -a ../../${LOGFILE}
 	if [ $incl_sarscov2 == false ]; then
-		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ../../${LOGFILE}
+		# ./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ../../${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ../../${LOGFILE}
@@ -303,7 +303,7 @@ if [ $build_ref_genome == true ]; then
 		fi
 	elif [ $incl_sarscov2 == true ]; then
 		echo "Including Sars-cov2 genome into the reference..." | tee -a ../../${LOGFILE}
-		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ../../${LOGFILE}
+		# ./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ../../${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ../../${LOGFILE}
