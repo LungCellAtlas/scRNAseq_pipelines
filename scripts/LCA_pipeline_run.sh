@@ -43,43 +43,51 @@ upload_link=""
 
 usage() {
 	cat <<HELP_USAGE
-	NOTE: this script should only be run from a secure environment, since it will transfer files through sftp to a secure Helmholtz server!
+	NOTE: this script should only be run from a secure environment!
 	NOTE 2: this script should be run from the parent directory of your downloaded sc_processing_cellranger directory!
 
 
-	Usage: $(basename "$0") [-hpesldcmtqC]
+	Usage: $(basename "$0") [-hpesnuloxcmtqC]
+		
 		-h 				show this help message
 
  		Mandatory arguments:
+ 		
  		-p <cluster|local> 		"Profile" for computation. Must be set to either 
  						local or cluster. Use local if pipeline can be 
  						run on current machine. Use cluster if jobs need 
  						to be submitted to cluster. See -q and -C flag 
  						below for further explanation about cluster 
  						profile.
- 		-e <path_to_conda_environment> 	path to the directory of 
- 						$env_name conda environment that was installed 
+ 		
+ 		-e <path_to_conda_environment> 	Path to the directory of $env_name 
+ 						conda environment that was installed 
  						previously. Should end with "$env_name"
- 		-s <sitename> 			name of your site/instute, upper case: e.g. 
+ 		
+ 		-s <sitename> 			Name of your site/instute, upper case: e.g. 
 						SANGER or HELMHOLTZ. This string will be used 
 						for naming the output file of the testrun, which 
 						will automatically be transfered to the Helmholtz 
 						server if -u is set to "true".
-		-n <dataset_name>			Name of dataset. This will be added to the
+		
+		-n <dataset_name>		Name of dataset. This will be added to the
 						output file name, so that identity of file is clear. 
-		-u <true|false>			whether to automatically upload the testrun 
+		
+		-u <true|false>			Whether to automatically upload the testrun 
 						output to the the Helmholtz secure server
-		-l <upload_link> 		only mandatory if u==true. Link that
+		
+		-l <upload_link> 		Only mandatory if u==true. Link that
 						is needed to upload the pipeline output (excluding 
 						.bam and .bai files) to secure Helmholtz storage.
 						This link will be provided to you by your LCA 
 						contact person.
-		-o <output_dir_name>			name of output directory, or full path to 
+		
+		-o <output_dir_name>		Name of output directory, or full path to 
 						output directory. If directory does not exist yet,
 						it will be created. Output of pipeline will be stored 
 						in this directory. 
 
-		-x <path_to_sample_table_file>	path to the file that contains a table
+		-x <path_to_sample_table_file>	Path to the file that contains a table
 						the required sample information. For more detailed
 						instructions on what the file should look like, 
 						check the LCA_pipeline GitHub Readme.
@@ -89,11 +97,14 @@ usage() {
 						sc_processing_cellranger/samplefiles folder.
 
  		Optional arguments specifying resources:
- 		-c <n_cores_cr>			number of cores to be used by cellranger 
+ 		
+ 		-c <n_cores_cr>			Number of cores to be used by cellranger 
  						(default: ${localcores})
- 		-m <Gb_mem_cr>			memory in Gb to be used by CellRanger 
+ 		
+ 		-m <Gb_mem_cr>			Memory in Gb to be used by CellRanger 
  						(default: ${localmemGB})
- 		-t <n_cores_st>			number of cores to be used by samtools, this 
+ 		
+ 		-t <n_cores_st>			Number of cores to be used by samtools, this 
 						should be lower than the total number of cores 
 						used by cellranger (default: ${samtools_thr})
 
@@ -103,7 +114,9 @@ usage() {
  		other executors and edit the 
  		[...]/sc_processing_cellranger/nfpipeline/nextflow.config file 
  		accordingly.):
- 		-q <que_name>			queue. Name of the queue/partition to be used.
+ 		
+ 		-q <que_name>			Queue. Name of the queue/partition to be used.
+ 		
  		-C <cluster_options>		ClusterOptions: additional parameters added 
 						for submitting the processes, as string, e.g. 
 						'qos=icb_other --nice=1000'. Please note: if you 
@@ -248,7 +261,7 @@ fi
 
 # check if script is run from a secure server:
 # let user confirm parameters:
-read -r -p "Note: this script should be run from a secure server/machine, since it will connect to a helmholtz server through sftp. Are you working from a secure environment? [y/N] " response
+read -r -p "Note: this script should be run from a secure server/machine. Are you working from a secure environment? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     echo "Secure environment confirmed."
