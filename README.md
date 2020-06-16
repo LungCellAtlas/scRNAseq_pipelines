@@ -31,7 +31,8 @@ $ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 $ sh Miniconda3-latest-Linux-x86_64.sh
 ```
 
-#### Required scripts:
+#### Required scripts:  
+The scripts listed below can be found in the scripts folder of this repo.  
 For setting up and testing the pipeline, download the following two bash scripts:  
 LCA_pipeline_setup.sh  
 LCA_pipeline_testrun.sh  
@@ -112,7 +113,7 @@ $ ./LCA_pipeline_testrun.sh -p cluster -e /storage/groups/ml01/workspace/lisa.si
 
 ### run the pipeline on your data
 
-Once you have completed the testrun successfully, you can run the pipeline on your own data. This is similar to doing the testrun, except now you'll need to create a tsv (or .xls or tab-separated .txt) file with information about the samples you want to run the pipeline on. An example is shown [here](docs/example_sample_table.txt). The table should be a tab-separated file containing the samples, one line per sample. The sample header must consist of the following fields.  
+Once you have completed the testrun successfully, you can run the pipeline on your own data. This is similar to doing the testrun, except now you'll need to create a tsv (or .xls or tab-separated .txt) file with information about the samples you want to run the pipeline on. An example with one sample is shown [here](docs/example_sample_table.txt). The table should be a tab-separated file containing the samples, one line per sample. The sample header must consist of the following fields.  
 
 * Sample: Name of the sample (must match the names of the fastq files)
 * ncells: Estimated number of cells
@@ -121,7 +122,7 @@ Once you have completed the testrun successfully, you can run the pipeline on yo
 * refgtf: Path to gtf file describing the gene models (is available in the genome index folder created by Cell Ranger in genes/genes.gtf)
 * chemistry: Version of the chemistry (e.g. SC3Pv2 or SC3Pv3, see this [link](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/count) for more info.)
 
-An example of such is downloaded when running the LCA_pipeline_setup.sh script, and can be found in the thus created sc_processing_cellranger/samplefiles folder. You can also find an example [on this GitHub](docs/example_sample_table.txt).
+An example of such is downloaded when running the LCA_pipeline_setup.sh script, and can be found in the thus created sc_processing_cellranger/samplefiles folder. You can also find an example with one sample [in this repo](docs/example_sample_table.txt).
 
 When your table is ready, you can run the LCA_pipeline_run.sh script with only one line of code to run the pipeline on your samples. Detailed documentation on how to use the command can be found under  
 ```
