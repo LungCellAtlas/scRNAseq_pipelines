@@ -37,6 +37,9 @@ LCA_pipeline_setup.sh
 LCA_pipeline_testrun.sh  
 For running the pipeline on your own data, download the final bash script:  
 LCA_pipeline_run.sh  
+For uploading to Helholtz secure server:  
+cloudsend.sh  
+[@LISA @THOMAS: add this script to automatically downloaded files and update path in pipeline scripts!]  
 Place the scripts in the directory from where you want to set up and run the pipeline.  
 
 ### setting up:  
@@ -90,6 +93,7 @@ We will also give a brief outline here. The script requires the following argume
 - e: path to conda environment that was created during pipeline setup, it should have the name "cr3-velocyto-scanpy"
 - s: sitename (name of site where data was generated, e.g. SANGER or HELMHOLTZ)
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
+- l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.
 
 Optional arguments specifying resources (check default settings in function documentation):  
 - c: number of cores for cellranger
@@ -102,7 +106,7 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_testrun.sh -p local -e /home/icb/lisa.sikkema/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -c 24 -m 80 -t 12  -q icb_cpu -C 'nice=10000 -t 2:00:00 --qos=icb_stndrd'
+$ ./LCA_pipeline_testrun.sh -p cluster -e /storage/groups/ml01/workspace/lisa.sikkema/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -l https://fake/example/link -c 20 -m 90 -t 10 -q icb_cpu -C 'nice=10000 -t 2:00:00 --qos=icb_stndrd'
 ``` 
 [@LISA add md5sum check here?]
 
@@ -132,6 +136,7 @@ We will give a brief outline of the arguments here as well, partly overlapping w
 - o: name of, or path to the output directory to be used.
 - x: path to the sample table file (.tsv, .xls, etc.) that contains the required sample info
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
+- l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.
 
 Optional arguments specifying resources (check default settings in function documentation):  
 - c: number of cores for cellranger
@@ -142,6 +147,10 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 - q: name of the queue to use
 - C: further clusteroptions to pass to the cluster
 
+An example of a full command to use is:  
+```
+$ ./LCA_pipeline_run.sh -p local -e /home/icb/lisa.sikkema/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -u true -c 22 -m 80 -t 11 -o outdir_LCA -x "/home/icb/lisa.sikkema/LCA_pipeline/Samples_testdata_fullrun.txt" -l https://fake/upload/link
+``` 
 The log of the run will be stored under LCA_pipeline_run.log, in the same folder as where the LCA_pipeline_run.sh is located.
 
 ## In case of problems
