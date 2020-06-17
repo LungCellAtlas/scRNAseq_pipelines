@@ -72,7 +72,7 @@ Finally, there is an option to include Sars-cov2 in the reference genome:
 
 An example of a command to use (with fake user:pass) is:
 ```
-$ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/icb/lisa.sikkema/miniconda3/envs/ -u 12345a:6789b 
+$ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/lisa/miniconda3/envs/ -u 12345a:6789b 
 ```
 
 
@@ -106,7 +106,7 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_testrun.sh -p cluster -e /storage/groups/ml01/workspace/lisa.sikkema/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -l https://fake/example/link -c 20 -m 90 -t 10 -q icb_cpu -C 'nice=10000 -t 2:00:00 --qos=icb_stndrd'
+$ ./LCA_pipeline_testrun.sh -p cluster -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -l https://fake/example/link -c 20 -m 90 -t 10 -q icb_cpu -C 'nice=10000 -t 2:00:00 --qos=icb_stndrd'
 ``` 
 [@LISA add md5sum check here?]
 
@@ -149,7 +149,7 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_run.sh -p local -e /home/icb/lisa.sikkema/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -u true -c 22 -m 80 -t 11 -o outdir_LCA -x "/home/icb/lisa.sikkema/LCA_pipeline/Samples_testdata_fullrun.txt" -l https://fake/upload/link
+$ ./LCA_pipeline_run.sh -p local -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -u true -c 22 -m 80 -t 11 -o outdir_LCA -x "/home/lisa/LCA_pipeline/Samples_testdata_fullrun.txt" -l https://fake/upload/link
 ``` 
 The log of the run will be stored under LCA_pipeline_run.log, in the same folder as where the LCA_pipeline_run.sh is located.
 
