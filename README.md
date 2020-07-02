@@ -31,7 +31,7 @@ $ sh Miniconda3-latest-Linux-x86_64.sh
 ```
 
 #### Required scripts:  
-The scripts listed below can be found in the scripts folder of this repo.  
+The scripts listed below can be found in the cr_pipeline folder of this repo. Clone the repo to get all of them, or download individually:
 For setting up and testing the pipeline, download the following two bash scripts:  
 LCA_pipeline_setup.sh  
 LCA_pipeline_testrun.sh  
