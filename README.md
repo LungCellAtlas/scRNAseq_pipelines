@@ -37,9 +37,6 @@ LCA_pipeline_setup.sh
 LCA_pipeline_testrun.sh  
 For running the pipeline on your own data, download the final bash script:  
 LCA_pipeline_run.sh  
-For uploading to Helholtz secure server:  
-cloudsend.sh  
-[@LISA @THOMAS: add this script to automatically downloaded files and update path in pipeline scripts!]  
 Place the scripts in the directory from where you want to set up and run the pipeline.  
 
 ### setting up:  
@@ -79,10 +76,9 @@ $ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/lisa/miniconda3/envs/ -u 12345a:6
 ### testrun the installed pipeline:  
 
 We made a testrun script "LCA_pipeline_testrun.sh" with a small toy dataset from https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_v3 (downloaded automatically during pipeline setup above) to make sure 
-that your pipeline works as expected. The script can be run with only one line in terminal, and should take between half an hour and a few hours to run (depending on your computing power).
+that your pipeline works as expected. (Note that this testrun is designed for the pipeline excluding SARS-cov2 in the reference genome.) The script can be run with only one line in terminal, and should take between half an hour and a few hours to run (depending on your computing power).
 It runs the entire pipeline on the toy data,
 and includes an option to transfer the output files, exluding .bam and .bai files, to a secure storage at the Helmholtz Center in Munich, Germany.  
-[@LISA check this] Note! The script should be run from a secure environment to ensure the file transfer really is secure!
 
 Detailed documentation on how to use the script is available under 
 ```
@@ -106,9 +102,8 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_testrun.sh -p cluster -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -l https://fake/example/link -c 20 -m 90 -t 10 -q icb_cpu -C 'nice=10000 -t 2:00:00 --qos=icb_stndrd'
+$ ./LCA_pipeline_testrun.sh -p cluster -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -l https://fake/example/link -c 20 -m 90 -t 10 -q hh_cpu -C 'nice=10000 -t 2:00:00 --qos=hh_stndrd'
 ``` 
-[@LISA add md5sum check here?]
 
 ### run the pipeline on your data
 
@@ -151,7 +146,6 @@ An example of a full command to use is:
 ```
 $ ./LCA_pipeline_run.sh -p local -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -u true -c 22 -m 80 -t 11 -o outdir_LCA -x "/home/lisa/LCA_pipeline/Samples_testdata_fullrun.txt" -l https://fake/upload/link
 ``` 
-The log of the run will be stored under LCA_pipeline_run.log, in the same folder as where the LCA_pipeline_run.sh is located.
 
 ## In case of problems
 Submit an issue on this GitHub page.
