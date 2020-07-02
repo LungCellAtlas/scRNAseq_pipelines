@@ -2,6 +2,8 @@
 # A: Lisa Sikkema, 2020
 # D: testrun Lung Cell Atlas cellranger pipeline
 
+# LCA pipeline version:
+pipeline_version="0.1.0"
 
 # parameter defaults: 
 
@@ -34,8 +36,8 @@ upload_link=""
 usage() {
 	cat <<HELP_USAGE
 
-	NOTE: this script should be run from the parent directory of your downloaded sc_processing_cellranger directory!
-
+	LCA pipeline version: ${pipeline_version}
+	NOTE: this script should be run from the parent directory of your downloaded sc_processing_cellranger_LCA_v${pipeline_version} directory!
 
 	Usage: $(basename "$0") [-hpesulcmtqC]
 		
@@ -86,7 +88,7 @@ usage() {
  		a SLURM cluster. (If cluster is not SLURM, please visit the nextflow 
  		documentation (https://www.nextflow.io/docs/latest/executor.html) for 
  		other executors and edit the 
- 		[...]/sc_processing_cellranger/nfpipeline/nextflow.config file 
+ 		[...]/sc_processing_cellranger_LCA_v${pipeline_version}/nfpipeline/nextflow.config file 
  		accordingly.):
  		
  		-q <que_name>			Queue. Name of the queue/partition to be used.
@@ -205,25 +207,25 @@ if [ $upload == true ] && [ -z $upload_link ]; then
 	exit 1
 fi
 
-# check if directory run/testrun already exists
-if [ -d sc_processing_cellranger/testrun ]; then
-	echo "directory './sc_processing_cellranger/testrun' already exists. Please remove testrun directory. Exiting."
+# check if directory run/testrun_v${pipeline_version} already exists
+if [ -d sc_processing_cellranger_LCA_v${pipeline_version}/testrun_v${pipeline_version} ]; then
+	echo "directory './sc_processing_cellranger_LCA_v${pipeline_version}/testrun_v${pipeline_version}' already exists. Please remove testrun_v${pipeline_version} directory. Exiting."
 	exit 1
 fi
 
-# cd into sc_processing_cellranger folder
-cd sc_processing_cellranger
+# cd into sc_processing_cellranger_LCA_v${pipeline_version} folder
+cd sc_processing_cellranger_LCA_v${pipeline_version}
 
-# print present working directory, it should be sc_processing_cellranger
-echo "(Current working directory should be sc_processing_cellranger" 
+# print present working directory, it should be sc_processing_cellranger_LCA_v${pipeline_version}
+echo "(Current working directory should be sc_processing_cellranger_LCA_v${pipeline_version}" 
 echo "pwd: `pwd`)"
 
 # creating directory for testrun now:
-mkdir -p testrun/run
-echo "directory for testrun created: `pwd`/testrun/run"
+mkdir -p testrun_v${pipeline_version}/run
+echo "directory for testrun created: `pwd`/testrun_v${pipeline_version}/run"
 
-# cd into testrun directory
-cd testrun
+# cd into testrun_v${pipeline_version} directory
+cd testrun_v${pipeline_version}
 
 # Log filenname
 LOGFILE="LOG_LCA_pipeline_testrun.log"
@@ -236,15 +238,17 @@ if [ -f ${LOGFILE} ]; then
 else
 	# Create log file and add DATE
 	echo `date` > ${LOGFILE}
-	echo "LOG created in testrun directory: ${logfile_dir}/${LOGFILE}" | tee -a ${logfile_dir}/${LOGFILE}
+	echo "LOG created in testrun_v${pipeline_version} directory: ${logfile_dir}/${LOGFILE}" | tee -a ${logfile_dir}/${LOGFILE}
 fi
-# echo into "run" subdirectory for nextflow run
+# echo pipeline version:
+echo "Lung Cell Atlas pipeline version: ${pipeline_version}" | tee -a ${logfile_dir}/${LOGFILE}
+# cd into "run" subdirectory for nextflow run
 cd run
 # print parameters. tee command (t-split) splits output into normal printing and a second target, 
 # in this case the log file to which it will -a(ppend) the output.
 # i.e. parameters are printed and stored in logfile.
 echo "PARAMETERS:" | tee -a ${logfile_dir}/${LOGFILE}
-echo "upload output files to Helmholtz server automatically: ${upload}"
+echo "upload output files to Helmholtz server automatically: ${upload}" | tee -a ${logfile_dir}/${LOGFILE}
 echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_thr}, localmemGB: ${localmemGB}" | tee -a ${logfile_dir}/${LOGFILE}
 echo "profile: ${profile}" | tee -a ${logfile_dir}/${LOGFILE}
 echo "sitename provided: ${sitename}" | tee -a ${logfile_dir}/${LOGFILE}
@@ -280,12 +284,12 @@ if ! [ -z "$ClusterOptions" ]; then
 fi
 # now run nextflow command:
 echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${logfile_dir}/${LOGFILE}
-# try running nextflow from subshell...
+# run nextflow from subshell, so that we can push it to bg without problems if we want. Output is still added to Log
 (
 nextflow run ../../nfpipeline/sc_processing_r7.nf -profile $profile -c ../../nfpipeline/nextflow.config --outdir '../' --samplesheet '../../samplefiles/Samples_testdata.xls' --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
 ) | tee -a ${logfile_dir}/${LOGFILE}
 echo "Done. End time nf run: `date`" | tee -a ${logfile_dir}/${LOGFILE}
-# check if run was successfull. In that case, there should be a cellranger directory in the testrun directory
+# check if run was successfull. In that case, there should be a cellranger directory in the testrun_v${pipeline_version} directory
 if ! [ -d ../cellranger ]; then
 	echo "Something must have gone run with your nextflow run. No cellranger directory was created. Exiting." | tee -a ${logfile_dir}/${LOGFILE}
 	exit 1
@@ -302,18 +306,17 @@ cd ../..
 # and zip the result of the testrun. Include the date and time in the file name, 
 # so we can distinguish between different testruns.
 date_today_long=`date '+%Y%m%d_%H%M'`
-echo "Compressing the output of your testrun into the file ${sitename}_${date_today_long}.testrun.tar.gz..." | tee -a ${logfile_dir}/${LOGFILE}
+echo "Compressing the output of your testrun_v${pipeline_version} into the file ${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz..." | tee -a ${logfile_dir}/${LOGFILE}
 echo "folder containing tar file: `pwd`" | tee -a ${logfile_dir}/${LOGFILE}
 # note that folder names/paths are considered relative to the folder to tar. 
-# so --exlude=run actually means --exclude=./testrun/run, from the perspective of our current dir!
-tar --exclude='*.bam' --exclude='*.bai' --exclude=run -czvf ${sitename}_${date_today_long}.testrun.tar.gz  ./testrun | tee -a ${logfile_dir}/${LOGFILE}
+# so --exlude=run actually means --exclude=./testrun_v${pipeline_version}/run, from the perspective of our current dir!
+tar --exclude='*.bam' --exclude='*.bai' --exclude=run -czvf ${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz  ./testrun_v${pipeline_version} | tee -a ${logfile_dir}/${LOGFILE}
 echo "Done" | tee -a ${logfile_dir}/${LOGFILE}
 
 # now upload the output to Helmholtz Nextcloud
-# CHECK WHERE FINAL CLOUDSEND.SH PATH WILL BE!! AND IF WE NEED TO CHMOD
 if [ $upload == true ]; then
 	echo "We will now upload output to Helmholtz secure folder" | tee -a ${logfile_dir}/${LOGFILE}
-	./file_sharing/cloudsend.sh ./${sitename}_${date_today_long}.testrun.tar.gz $upload_link 2>&1 | tee -a ${logfile_dir}/${LOGFILE} # redirect output of shellscript to logfile
+	./file_sharing/cloudsend.sh ./${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz $upload_link 2>&1 | tee -a ${logfile_dir}/${LOGFILE} # redirect output of shellscript to logfile
 fi
 
 # end

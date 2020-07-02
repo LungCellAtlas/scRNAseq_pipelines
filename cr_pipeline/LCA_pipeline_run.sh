@@ -2,9 +2,8 @@
 # A: Lisa Sikkema, 2020
 # D: run Lung Cell Atlas cellranger pipeline
 
-
-### NOTE TO LISA: COPIES ENTIRE TESTRUN SCRIPT, NOW ADAPT TO ACTUAL RUN!
-
+# LCA pipeline version:
+pipeline_version="0.1.0"
 
 # parameter defaults: 
 
@@ -43,7 +42,9 @@ upload_link=""
 
 usage() {
 	cat <<HELP_USAGE
-	NOTE: this script should be run from the parent directory of your downloaded sc_processing_cellranger directory!
+
+	Lung Cell Atlas pipeline version: v${pipeline_version}
+	NOTE: this script should be run from the parent directory of your downloaded sc_processing_cellranger_LCA_v${pipeline_version} directory!
 
 
 	Usage: $(basename "$0") [-hpesnuloxcmtqC]
@@ -93,7 +94,7 @@ usage() {
 						Alternatively, and if you have run the pipeline 
 						testrun script before, you can check out the .xls 
 						example files in the 
-						sc_processing_cellranger/samplefiles folder.
+						sc_processing_cellranger_LCA_v${pipeline_version}/samplefiles folder.
 
  		Optional arguments specifying resources:
  		
@@ -111,7 +112,7 @@ usage() {
  		a SLURM cluster. (If cluster is not SLURM, please visit the nextflow 
  		documentation (https://www.nextflow.io/docs/latest/executor.html) for 
  		other executors and edit the 
- 		[...]/sc_processing_cellranger/nfpipeline/nextflow.config file 
+ 		[...]/sc_processing_cellranger_LCA_v${pipeline_version}/nfpipeline/nextflow.config file 
  		accordingly.):
  		
  		-q <que_name>			Queue. Name of the queue/partition to be used.
@@ -262,11 +263,11 @@ fi
 # store start directory:
 startdir=`pwd`
 
-# cd into sc_processing_cellranger folder
-cd sc_processing_cellranger
+# cd into sc_processing_cellranger_LCA_v${pipeline_version} folder
+cd sc_processing_cellranger_LCA_v${pipeline_version}
 
-# print present working directory, it should be sc_processing_cellranger
-echo "(Current working directory should be sc_processing_cellranger"
+# print present working directory, it should be sc_processing_cellranger_LCA_v${pipeline_version}
+echo "(Current working directory should be sc_processing_cellranger_LCA_v${pipeline_version}"
 echo "pwd: `pwd`)"
 
 # check if outdir already exists
@@ -281,46 +282,50 @@ outdir_full=`pwd`
 
 
 # check if run directory already exists in outdir:
-if [ -d pipelinerun ]; then
-	echo "There is already a directory named 'pipelinerun' in your outdir '${outdir}'! Remove it or change outdir under flag -o. Exiting."
+if [ -d pipelinerun_v${pipeline_version} ]; then
+	echo "There is already a directory named 'pipelinerun_v${pipeline_version}' in your outdir '${outdir}'! Remove it or change outdir under flag -o. Exiting."
 	exit 1
 fi
-# create directory called pipelinerun/run and cd into it
-mkdir -p pipelinerun/run
-cd pipelinerun
+# create directory called pipelinerun_v${pipeline_version}/run and cd into it
+mkdir -p pipelinerun_v${pipeline_version}/run
+cd pipelinerun_v${pipeline_version}
 
 # Log filenname
 LOGFILE="LOG_LCA_pipeline_run.log"
 # check if logfile already exists:
 if [ -f ${LOGFILE} ]; then
-    echo "ERROR: LOG file ${LOGFILE} already exists in ${outdir_full}/pipelinerun/. please remove. exit." 
+    echo "ERROR: LOG file ${LOGFILE} already exists in ${outdir_full}/pipelinerun_v${pipeline_version}/. please remove. exit." 
     exit 1
 else
-	echo "Creating log file in ${outdir_full}/pipelinerun/${LOGFILE}"
+	echo "Creating log file in ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}"
 	echo `date` > ${LOGFILE}
 fi
+# print pipeline version
+echo "Lung Cell Atlas pipeline version: v${pipeline_version}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+
+
 # now move into run directory, for nextflow command:
 cd run
 # print parameters. tee command (t-split) splits output into normal printing and a second target, 
 # in this case the log file to which it will -a(ppend) the output.
 # i.e. parameters are printed and stored in logfile.
-echo "PARAMETERS:" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "upload output files to Helmholtz server automatically: ${upload}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_thr}, localmemGB: ${localmemGB}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "profile: ${profile}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "output dir: ${outdir}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "file with sample information: ${path_to_sample_table}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "sitename provided: ${sitename}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "dataset name provided: ${dataset_name}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "path to conda environment directory provided: ${conda_env_dir_path}" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+echo "PARAMETERS:" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "upload output files to Helmholtz server automatically: ${upload}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_thr}, localmemGB: ${localmemGB}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "profile: ${profile}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "output dir: ${outdir}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "file with sample information: ${path_to_sample_table}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "sitename provided: ${sitename}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "dataset name provided: ${dataset_name}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "path to conda environment directory provided: ${conda_env_dir_path}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 
 # let user confirm parameters:
 read -r -p "Are the parameters correct? Continue? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
-    echo "Parameters confirmed." | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+    echo "Parameters confirmed." | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 else
-    echo "Parameters not confirmed, exit." | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+    echo "Parameters not confirmed, exit." | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 	exit 1
 fi
 
@@ -329,7 +334,7 @@ fi
 path_to_conda_sh=$(conda info --base)/etc/profile.d/conda.sh
 source $path_to_conda_sh 
 # now we can activate environment
-echo "Activating conda environment...." | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+echo "Activating conda environment...." | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 conda activate $conda_env_dir_path # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
 
 # prepare extra arguments for nextflow command
@@ -341,22 +346,22 @@ if ! [ -z "$ClusterOptions" ]; then
 	nf_add_arguments="${nf_add_arguments} --clusterOpt '${ClusterOptions}'"
 fi
 # now run nextflow command:
-echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-# try running nextflow from subshell...
+echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+# run nextflow from subshell, so that we can still push it to bg if we want, and store the output
 (
-nextflow run ${startdir}/sc_processing_cellranger/nfpipeline/sc_processing_r7.nf -profile $profile -c ${startdir}/sc_processing_cellranger/nfpipeline/nextflow.config --outdir $outdir_full/pipelinerun/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
-) | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "Done. End time nf run: `date`" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+nextflow run ${startdir}/sc_processing_cellranger_LCA_v${pipeline_version}/nfpipeline/sc_processing_r7.nf -profile $profile -c ${startdir}/sc_processing_cellranger_LCA_v${pipeline_version}/nfpipeline/nextflow.config --outdir $outdir_full/pipelinerun_v${pipeline_version}/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
+) | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "Done. End time nf run: `date`" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 # check if run was successfull. In that case, there should be a cellranger directory in the testrun directory
 if ! [ -d ../cellranger ]; then
-	echo "Something must have gone run with your nextflow run. No cellranger directory was created. Exiting." | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+	echo "Something must have gone run with your nextflow run. No cellranger directory was created. Exiting." | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 	exit 1
 else
-	echo "Ok" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+	echo "Ok" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 fi
 
 
-# move back to outdir (i.e. not 'pipelinerun/run/' dir but the one above)
+# move back to outdir (i.e. not 'pipelinerun_v${pipeline_version}/run/' dir but the one above)
 cd $outdir_full
 
 # and zip the result of run. Include the date and time in the file name, 
@@ -364,19 +369,18 @@ cd $outdir_full
 date_today_long=`date '+%Y%m%d_%H%M'`
 echo "Compressing the output of your pipeline run into the file: \
 $outdir_full${sitename}_${dataset_name}_${date_today_long}.tar.gz \
-excluding .bam and .bai files, and excluding ./run direcory..." | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+excluding .bam and .bai files, and excluding ./run direcory..." | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 # note that folder names/paths are considered relative to the folder to tar. 
-# so --exlude=run actually means --exclude=$outdir_full/pipelinerun/run!
-tar --exclude="*.bam" --exclude="*.bai" --exclude=run -czvf ${sitename}_${dataset_name}_${date_today_long}.tar.gz  "$outdir_full/pipelinerun" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-echo "Done" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+# so --exlude=run actually means --exclude=$outdir_full/pipelinerun_v${pipeline_version}/run!
+tar --exclude="*.bam" --exclude="*.bai" --exclude=run -czvf ${sitename}_${dataset_name}_${date_today_long}.tar.gz  "$outdir_full/pipelinerun_v${pipeline_version}" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+echo "Done" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 
 # now upload the output to Helmholtz Nextcloud
-# CHECK WHERE FINAL CLOUDSEND.SH PATH WILL BE!! AND IF WE NEED TO CHMOD
 if [ $upload == true ]; then
-	echo "We will now upload output to Helmholtz secure folder" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
-	${startdir}/sc_processing_cellranger/file_sharing/cloudsend.sh ${sitename}_${dataset_name}_${date_today_long}.tar.gz $upload_link 2>&1 | tee -a ${outdir_full}/pipelinerun/${LOGFILE} # redirect output of shellscript to logfile
+	echo "We will now upload output to Helmholtz secure folder" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
+	${startdir}/sc_processing_cellranger_LCA_v${pipeline_version}/file_sharing/cloudsend.sh ${sitename}_${dataset_name}_${date_today_long}.tar.gz $upload_link 2>&1 | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE} # redirect output of shellscript to logfile
 fi
 
 # end
-echo "End of script!" | tee -a ${outdir_full}/pipelinerun/${LOGFILE}
+echo "End of script!" | tee -a ${outdir_full}/pipelinerun_v${pipeline_version}/${LOGFILE}
 

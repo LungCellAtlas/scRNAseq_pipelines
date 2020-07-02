@@ -2,6 +2,8 @@
 # A: Lisa Sikkema, 2020
 # D: download files, set up conda environment and build reference genome for Lung Cell Atlas cellranger pipeline
 
+# version of pipeline
+pipeline_version="0.1.0"
 
 # parameter defaults: 
 
@@ -29,6 +31,9 @@ build_ref_genome=true
 
 usage() {
 	cat <<HELP_USAGE
+	
+	Lung Cell Atlas pipeline version: v${pipeline_version}
+
 	Usage: $(basename "$0") [-htmsegcuDCRS] 
 		Options:
 		-h 			show this help text
@@ -154,9 +159,19 @@ if [ $download_files == true ] && [ -z $user_pass ]; then
 	exit 1
 fi
 
+# check if sc_processing_cellranger_LCA_v${pipeline_version} exists:
+if ! [ -d sc_processing_cellranger_LCA_v${pipeline_version} ] && [ $download_files == false ]; then
+		echo "There is no folder named sc_processing_cellranger_LCA_v${pipeline_version}, in which the downloaded pipeline files should be." | tee -a ${LOGFILE}
+		echo "If you want to download the pipeline files, set -D flag to true. Exiting."
+		exit 1
+fi
+
+
+
+
 # check if conda_envs_dir argument was passed:
 if [[ ($create_env == true || $build_ref_genome == true) && -z $conda_envs_dir ]]; then 
-	echo "conda environment direcotry (-c flag) argument not provided. Exiting." 
+	echo "conda environment directory (-c flag) argument not provided. Exiting." 
 	exit 1
 fi 
 
@@ -197,6 +212,8 @@ fi
 
 # Create log file and add DATE
 echo `date` > ${LOGFILE}
+# print pipeline version
+echo "Lung Cell Atlas pipeline version: v${pipeline_version}" | tee -a ${LOGFILE}
 
 # Print which steps will be skipped or included:
 echo "STEPS TO BE INCLUDED/SKIPPED:" | tee -a ${LOGFILE}
@@ -260,10 +277,12 @@ if [ $download_files == true ]; then
 	echo "Unpacking downloaded tar file now..." | tee -a ${LOGFILE}
 	tar -xzvf lca_cr_pipeline.tar.gz | tee -a ${LOGFILE}
 	echo "Done" | tee -a ${LOGFILE}
+	echo "adding version number ${pipeline_version} to unpacked pipeline folder: sc_processing_cellranger_LCA_v${pipeline_version}" | tee -a ${LOGFILE}
+	mv sc_processing_cellranger sc_processing_cellranger_LCA_v${pipeline_version}
 fi
 
 # cd into resulting folder
-cd sc_processing_cellranger
+cd sc_processing_cellranger_LCA_v${pipeline_version}
 
 # CREATE CONDA ENVIRONMENT, if $create_env == true:
 
@@ -291,11 +310,11 @@ if [ $build_ref_genome == true ]; then
 	cd refgenomes
 	echo "Currently working in folder `pwd`" | tee -a ../../${LOGFILE}
 	# now run the script to build the genome:
-	echo "We will now start building the reference genome, using the script [...]/sc_processing_cellranger/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ../../${LOGFILE}
+	echo "We will now start building the reference genome, using the script [...]/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ../../${LOGFILE}
 	echo "This might take a few hours. Start time: `date`" | tee -a ../../${LOGFILE}
-	echo "For a detailed log of the genome building, check out the logfile in your sc_processing_cellranger/refgenomes folder!" | tee -a ../../${LOGFILE}
+	echo "For a detailed log of the genome building, check out the logfile in your sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes folder!" | tee -a ../../${LOGFILE}
 	if [ $incl_sarscov2 == false ]; then
-		# ./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ../../${LOGFILE}
+		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ../../${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ../../${LOGFILE}
@@ -303,7 +322,7 @@ if [ $build_ref_genome == true ]; then
 		fi
 	elif [ $incl_sarscov2 == true ]; then
 		echo "Including Sars-cov2 genome into the reference..." | tee -a ../../${LOGFILE}
-		# ./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ../../${LOGFILE}
+		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ../../${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ../../${LOGFILE}
