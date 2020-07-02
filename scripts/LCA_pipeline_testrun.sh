@@ -34,8 +34,7 @@ upload_link=""
 usage() {
 	cat <<HELP_USAGE
 
-	NOTE: this script should only be run from a secure environment
-	NOTE 2: this script should be run from the parent directory of your downloaded sc_processing_cellranger directory!
+	NOTE: this script should be run from the parent directory of your downloaded sc_processing_cellranger directory!
 
 
 	Usage: $(basename "$0") [-hpesulcmtqC]
@@ -206,75 +205,69 @@ if [ $upload == true ] && [ -z $upload_link ]; then
 	exit 1
 fi
 
-# check if script is run from a secure server:
-# let user confirm parameters:
-read -r -p "Note: this script should be run from a secure server/machine. Are you working from a secure environment? [y/N] " response
-if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
-then
-    echo "Secure environment confirmed."
-else
-    echo "Not working from a secure environment. Exiting."
-	exit 1
-fi
-
 # check if directory run/testrun already exists
 if [ -d sc_processing_cellranger/testrun ]; then
 	echo "directory './sc_processing_cellranger/testrun' already exists. Please remove testrun directory. Exiting."
 	exit 1
 fi
 
+# cd into sc_processing_cellranger folder
+cd sc_processing_cellranger
 
+# print present working directory, it should be sc_processing_cellranger
+echo "(Current working directory should be sc_processing_cellranger" 
+echo "pwd: `pwd`)"
 
+# creating directory for testrun now:
+mkdir -p testrun/run
+echo "directory for testrun created: `pwd`/testrun/run"
+
+# cd into testrun directory
+cd testrun
 
 # Log filenname
-LOGFILE="LCA_pipeline_testrun.log"
+LOGFILE="LOG_LCA_pipeline_testrun.log"
+# Log filde directory:
+logfile_dir=`pwd`
 # check if logfile already exists:
 if [ -f ${LOGFILE} ]; then
     echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exit."
     exit 1
+else
+	# Create log file and add DATE
+	echo `date` > ${LOGFILE}
+	echo "LOG created in testrun directory: ${logfile_dir}/${LOGFILE}" | tee -a ${logfile_dir}/${LOGFILE}
 fi
-
+# echo into "run" subdirectory for nextflow run
+cd run
 # print parameters. tee command (t-split) splits output into normal printing and a second target, 
 # in this case the log file to which it will -a(ppend) the output.
 # i.e. parameters are printed and stored in logfile.
-echo "PARAMETERS:" | tee -a ${LOGFILE}
+echo "PARAMETERS:" | tee -a ${logfile_dir}/${LOGFILE}
 echo "upload output files to Helmholtz server automatically: ${upload}"
-echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_thr}, localmemGB: ${localmemGB}" | tee -a ${LOGFILE}
-echo "profile: ${profile}" | tee -a ${LOGFILE}
-echo "sitename provided: ${sitename}" | tee -a ${LOGFILE}
-echo "path to conda environment directory provided: ${conda_env_dir_path}" | tee -a ${LOGFILE}
+echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_thr}, localmemGB: ${localmemGB}" | tee -a ${logfile_dir}/${LOGFILE}
+echo "profile: ${profile}" | tee -a ${logfile_dir}/${LOGFILE}
+echo "sitename provided: ${sitename}" | tee -a ${logfile_dir}/${LOGFILE}
+echo "path to conda environment directory provided: ${conda_env_dir_path}" | tee -a ${logfile_dir}/${LOGFILE}
 
 # let user confirm parameters:
 read -r -p "Are the parameters correct? Continue? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
-    echo "Parameters confirmed." | tee -a ${LOGFILE}
+    echo "Parameters confirmed." | tee -a ${logfile_dir}/${LOGFILE}
 else
-    echo "Parameters not confirmed, exit." | tee -a ${LOGFILE}
+    echo "Parameters not confirmed, exit." | tee -a ${logfile_dir}/${LOGFILE}
 	exit 1
 fi
 
 
-# cd into sc_processing_cellranger folder
-cd sc_processing_cellranger
-
-# print present working directory, it should be sc_processing_cellranger
-echo "(Current working directory should be sc_processing_cellranger" | tee -a ../${LOGFILE}
-echo "pwd: `pwd`)" | tee -a ../${LOGFILE}
-
-# creating directory for testrun now:
-mkdir -p testrun/run
-echo "directory for testrun created: `pwd`/testrun/run" | tee -a ../${LOGFILE}
-
-# cd into testrun directory
-cd testrun/run
 
 # activate environment. Since the command conda activate doesn't (always?) work
 # in subshell, we first want to use source:
 path_to_conda_sh=$(conda info --base)/etc/profile.d/conda.sh
 source $path_to_conda_sh 
 # now we can activate environment
-echo "Activating conda environment...." | tee -a ../../../${LOGFILE}
+echo "Activating conda environment...." | tee -a ${logfile_dir}/${LOGFILE}
 conda activate $conda_env_dir_path # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
 
 # prepare extra arguments for nextflow command
@@ -286,31 +279,43 @@ if ! [ -z "$ClusterOptions" ]; then
 	nf_add_arguments="${nf_add_arguments} --clusterOpt '${ClusterOptions}'"
 fi
 # now run nextflow command:
-echo "Running nextflow command now.... Start time nf run: `date`" | tee -a ../../../${LOGFILE}
+echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${logfile_dir}/${LOGFILE}
 # try running nextflow from subshell...
 (
 nextflow run ../../nfpipeline/sc_processing_r7.nf -profile $profile -c ../../nfpipeline/nextflow.config --outdir '../' --samplesheet '../../samplefiles/Samples_testdata.xls' --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
-) | tee -a ../../../${LOGFILE} 
-echo "Done. End time nf run: `date`" | tee -a ../../../${LOGFILE}
+) | tee -a ${logfile_dir}/${LOGFILE}
+echo "Done. End time nf run: `date`" | tee -a ${logfile_dir}/${LOGFILE}
+# check if run was successfull. In that case, there should be a cellranger directory in the testrun directory
+if ! [ -d ../cellranger ]; then
+	echo "Something must have gone run with your nextflow run. No cellranger directory was created. Exiting." | tee -a ${logfile_dir}/${LOGFILE}
+	exit 1
+else
+	echo "Ok" | tee -a ${logfile_dir}/${LOGFILE}
+fi
+# check md5sum of output .mtx, and barcodes and features .tsvs. (h5 and h5ad have timestamps and therefore
+# cannot be used for checksums. Loom files also get prefix in indices)
+echo "We will now do an md5sum check on cellranger output:" | tee -a ${logfile_dir}/${LOGFILE}
+md5sum -c ../../testdata/CHECKSUM_testrun | tee -a ${logfile_dir}/${LOGFILE}
 
 # move back to root folder
 cd ../..
 # and zip the result of the testrun. Include the date and time in the file name, 
 # so we can distinguish between different testruns.
 date_today_long=`date '+%Y%m%d_%H%M'`
-echo "Compressing the output of your testrun into the file ${sitename}_${date_today_long}.testrun.tar.gz..." | tee -a ../${LOGFILE}
+echo "Compressing the output of your testrun into the file ${sitename}_${date_today_long}.testrun.tar.gz..." | tee -a ${logfile_dir}/${LOGFILE}
+echo "folder containing tar file: `pwd`" | tee -a ${logfile_dir}/${LOGFILE}
 # note that folder names/paths are considered relative to the folder to tar. 
 # so --exlude=run actually means --exclude=./testrun/run, from the perspective of our current dir!
-tar --exclude='*.bam' --exclude='*.bai' --exclude=run -czvf ${sitename}_${date_today_long}.testrun.tar.gz  ./testrun | tee -a ../${LOGFILE}
-echo "Done" | tee -a ../${LOGFILE}
+tar --exclude='*.bam' --exclude='*.bai' --exclude=run -czvf ${sitename}_${date_today_long}.testrun.tar.gz  ./testrun | tee -a ${logfile_dir}/${LOGFILE}
+echo "Done" | tee -a ${logfile_dir}/${LOGFILE}
 
 # now upload the output to Helmholtz Nextcloud
 # CHECK WHERE FINAL CLOUDSEND.SH PATH WILL BE!! AND IF WE NEED TO CHMOD
 if [ $upload == true ]; then
-	echo "We will now upload output to Helmholtz secure folder" | tee -a ../${LOGFILE}
-	../cloudsend.sh ./${sitename}_${date_today_long}.testrun.tar.gz $upload_link 2>&1 | tee -a ../${LOGFILE} # redirect output of shellscript to logfile
+	echo "We will now upload output to Helmholtz secure folder" | tee -a ${logfile_dir}/${LOGFILE}
+	./file_sharing/cloudsend.sh ./${sitename}_${date_today_long}.testrun.tar.gz $upload_link 2>&1 | tee -a ${logfile_dir}/${LOGFILE} # redirect output of shellscript to logfile
 fi
 
 # end
-echo "End of script!" | tee -a ../${LOGFILE}
+echo "End of script!" | tee -a ${logfile_dir}/${LOGFILE}
 

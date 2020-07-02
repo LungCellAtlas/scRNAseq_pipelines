@@ -250,12 +250,12 @@ if [ $download_files == true ]; then
 	echo "We will download the necessary files now, this shouldn't take too long..." | tee -a ${LOGFILE}
 
 	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/lca_cr_pipeline.tar.gz --output lca_cr_pipeline.tar.gz
-	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/CHECKSUM --output CHECKSUM
+	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/LCA_pipeline_setup_CHECKSUM --output LCA_pipeline_setup_CHECKSUM
 
 	echo "Done." | tee -a ${LOGFILE}
 	# validate that file is intact and not corrupted using checksum:
 	echo "Checking md5sum of downloaded file..." | tee -a ${LOGFILE}
-	md5sum -c CHECKSUM | tee -a ${LOGFILE}
+	md5sum -c LCA_pipeline_setup_CHECKSUM | tee -a ${LOGFILE}
 	# now unpack downloaded file:
 	echo "Unpacking downloaded tar file now..." | tee -a ${LOGFILE}
 	tar -xzvf lca_cr_pipeline.tar.gz | tee -a ${LOGFILE}
