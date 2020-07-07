@@ -22,7 +22,8 @@ nthreads="20"
 memgb="48"
 # Include Sars-cov2 genome:
 incl_sarscov2=false
-
+# Working path
+work_path="./"
 # script parts to run/skip:
 download_files=true
 create_env=true
@@ -50,6 +51,7 @@ usage() {
 					fa file name for the release), use without the 
 					patch id (e.g. GRCh37; GRCh38, GRCm38) 
 					(default: ${genomestring})
+                -w <work_path>          Working path for the pipeline (path for fastq, and pipeline results)
  		-c <path_to_envs_dir>	path to envs directory from your miniconda or 
 					anaconda, with trailing slash, e.g. 
 					/Users/doejohn/miniconda3/envs/
@@ -79,7 +81,7 @@ HELP_USAGE
 # go through optional arguments:
 # preceding colon after getopts: don't allow for any automated error messages
 # colon following flag letter: this flag requires an argument
-while getopts ":ht:m:s:e:g:c:u:D:C:R:S:" opt; do
+while getopts ":ht:m:s:e:g:c:w:u:D:C:R:S:" opt; do
 	# case is bash version of 'if' that allows for multiple scenarios
 	case "$opt" in
 		# if h is added, print usage and exit
@@ -96,8 +98,10 @@ while getopts ":ht:m:s:e:g:c:u:D:C:R:S:" opt; do
 		e ) ensrel=$OPTARG
 			;;
 		g ) genomestring=$OPTARG
-			;;
+                        ;; 
 		c ) conda_envs_dir=$OPTARG
+                        ;;
+                w ) work_path=$OPTARG
 			;;
 		u ) user_pass=$OPTARG
 			;;
@@ -160,8 +164,8 @@ if [ $download_files == true ] && [ -z $user_pass ]; then
 fi
 
 # check if sc_processing_cellranger_LCA_v${pipeline_version} exists:
-if ! [ -d sc_processing_cellranger_LCA_v${pipeline_version} ] && [ $download_files == false ]; then
-		echo "There is no folder named sc_processing_cellranger_LCA_v${pipeline_version}, in which the downloaded pipeline files should be." | tee -a ${LOGFILE}
+if ! [ -d $work_path/sc_processing_cellranger_LCA_v${pipeline_version} ] && [ $download_files == false ]; then
+		echo "There is no folder named $work_path/sc_processing_cellranger_LCA_v${pipeline_version}, in which the downloaded pipeline files should be." | tee -a ${LOGFILE}
 		echo "If you want to download the pipeline files, set -D flag to true. Exiting."
 		exit 1
 fi
@@ -202,8 +206,8 @@ fi
 # CREATE LOG AND PRINT PARAMETERS
 
 # Log filenname
-LOGFILE="LOG_LCA_pipeline_setup.log"
-
+LOGFILE=$work_path/"LOG_LCA_pipeline_setup.log"
+echo "Log file saved in : ${LOGFILE}"
 # Check if logfile exists
 if [ -f ${LOGFILE} ]; then
     echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exit."
@@ -248,6 +252,7 @@ echo "cellranger version expected: ${expectedcrv}, Ensembl release: ${ensrel}, G
 echo "nthreads: ${nthreads}, memgb: ${memgb}" | tee -a ${LOGFILE}
 echo "user:pass provided" | tee -a ${LOGFILE}
 echo "conda_envs_dir: $conda_envs_dir" | tee -a ${LOGFILE}
+echo "working path: $work_path" | tee -a ${LOGFILE}
 
 # let user confirm parameters:
 read -r -p "Are the parameters correct? Continue? [y/N] " response
@@ -259,30 +264,32 @@ else
 	exit 1
 fi
 
+# go in working path
+cd $work_path
+
 
 # DOWNLOAD THE REQUIRED FILES, if $download_files == true:
-
 if [ $download_files == true ]; then
 	# now download the tar file:
 	echo "We will download the necessary files now, this shouldn't take too long..." | tee -a ${LOGFILE}
 
-	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/lca_cr_pipeline.tar.gz --output lca_cr_pipeline.tar.gz
-	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/LCA_pipeline_setup_CHECKSUM --output LCA_pipeline_setup_CHECKSUM
+	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/lca_cr_pipeline.tar.gz --output $work_path/lca_cr_pipeline.tar.gz -k
+	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/LCA_pipeline_setup_CHECKSUM --output $work_path/LCA_pipeline_setup_CHECKSUM -k
 
 	echo "Done." | tee -a ${LOGFILE}
 	# validate that file is intact and not corrupted using checksum:
 	echo "Checking md5sum of downloaded file..." | tee -a ${LOGFILE}
-	md5sum -c LCA_pipeline_setup_CHECKSUM | tee -a ${LOGFILE}
+	md5sum -c $work_path/LCA_pipeline_setup_CHECKSUM | tee -a ${LOGFILE}
 	# now unpack downloaded file:
 	echo "Unpacking downloaded tar file now..." | tee -a ${LOGFILE}
-	tar -xzvf lca_cr_pipeline.tar.gz | tee -a ${LOGFILE}
+	tar -xzvf $work_path/lca_cr_pipeline.tar.gz | tee -a ${LOGFILE}
 	echo "Done" | tee -a ${LOGFILE}
-	echo "adding version number ${pipeline_version} to unpacked pipeline folder: sc_processing_cellranger_LCA_v${pipeline_version}" | tee -a ${LOGFILE}
-	mv sc_processing_cellranger sc_processing_cellranger_LCA_v${pipeline_version}
+	echo "adding version number ${pipeline_version} to unpacked pipeline folder: $work_path/sc_processing_cellranger_LCA_v${pipeline_version}" | tee -a ${LOGFILE}
+	mv sc_processing_cellranger $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
 fi
 
 # cd into resulting folder
-cd sc_processing_cellranger_LCA_v${pipeline_version}
+cd $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
 
 # CREATE CONDA ENVIRONMENT, if $create_env == true:
 
