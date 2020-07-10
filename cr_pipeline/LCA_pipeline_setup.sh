@@ -285,7 +285,7 @@ if [ $download_files == true ]; then
 	tar -xzvf $work_path/lca_cr_pipeline.tar.gz | tee -a ${LOGFILE}
 	echo "Done" | tee -a ${LOGFILE}
 	echo "adding version number ${pipeline_version} to unpacked pipeline folder: $work_path/sc_processing_cellranger_LCA_v${pipeline_version}" | tee -a ${LOGFILE}
-	mv sc_processing_cellranger $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
+	mv $work_path/sc_processing_cellranger $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
 fi
 
 # cd into resulting folder
@@ -296,10 +296,10 @@ cd $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
 path_to_env="${conda_envs_dir}cr3-velocyto-scanpy"
 
 if [ $create_env == true ]; then
-	echo "Creating conda environment in ${path_to_env}... NOTE! This can take a few hours..." | tee -a ../${LOGFILE}
-	echo "start time: `date`" | tee -a ../${LOGFILE}
-	conda create --prefix $path_to_env -c ./conda-bld -c conda-forge -c bioconda -y cellranger=3.1.0=0 scanpy=1.4.4.post1=py_3 velocyto.py=0.17.17=py36hc1659b7_0 samtools=1.10=h9402c20_2 conda=4.8.2=py36_0 nextflow=19.10 java-jdk=8.0.112 | tee -a ../${LOGFILE}
-	echo "End time: `date`" | tee -a ../${LOGFILE}
+	echo "Creating conda environment in ${path_to_env}... NOTE! This can take a few hours..." | tee -a ${LOGFILE}
+	echo "start time: `date`" | tee -a ${LOGFILE}
+	conda create --prefix $path_to_env -c ./conda-bld -c conda-forge -c bioconda -y cellranger=3.1.0=0 scanpy=1.4.4.post1=py_3 velocyto.py=0.17.17=py36hc1659b7_0 samtools=1.10=h9402c20_2 conda=4.8.2=py36_0 nextflow=19.10 java-jdk=8.0.112 star=2.7.5a | tee -a ${LOGFILE}
+	echo "End time: `date`" | tee -a ${LOGFILE}
 fi
 
 # BUILD REFERENCE GENOME, if $build_ref_genome == true:
@@ -310,34 +310,34 @@ if [ $build_ref_genome == true ]; then
 	path_to_conda_sh=$(conda info --base)/etc/profile.d/conda.sh
 	source $path_to_conda_sh 
 	# now we can activate environment
-	echo "Activating environment...." | tee -a ../${LOGFILE}
+	echo "Activating environment...." | tee -a ${LOGFILE}
 	conda activate $path_to_env # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
 	# now start building the reference genome!
 	# cd into the correct folder;
 	cd refgenomes
-	echo "Currently working in folder `pwd`" | tee -a ../../${LOGFILE}
+	echo "Currently working in folder `pwd`" | tee -a ${LOGFILE}
 	# now run the script to build the genome:
-	echo "We will now start building the reference genome, using the script [...]/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ../../${LOGFILE}
-	echo "This might take a few hours. Start time: `date`" | tee -a ../../${LOGFILE}
-	echo "For a detailed log of the genome building, check out the logfile in your sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes folder!" | tee -a ../../${LOGFILE}
+	echo "We will now start building the reference genome, using the script ${work_path}/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ${LOGFILE}
+	echo "This might take a few hours. Start time: `date`" | tee -a ${LOGFILE}
+	echo "For a detailed log of the genome building, check out the logfile in your ${work_path}/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes folder!" | tee -a ${LOGFILE}
 	if [ $incl_sarscov2 == false ]; then
-		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ../../${LOGFILE}
+		#./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
-			echo "Checking md5sum of output folder..." | tee -a ../../${LOGFILE}
-			md5sum -c ./md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0.md5 | tee -a ../../${LOGFILE}
+			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
+			md5sum -c ./md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0.md5 | tee -a ${LOGFILE}
 		fi
 	elif [ $incl_sarscov2 == true ]; then
-		echo "Including Sars-cov2 genome into the reference..." | tee -a ../../${LOGFILE}
-		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ../../${LOGFILE}
+		echo "Including Sars-cov2 genome into the reference..." | tee -a ${LOGFILE}
+		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
-			echo "Checking md5sum of output folder..." | tee -a ../../${LOGFILE}
-			md5sum -c ./md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0_sars_cov2.md5 | tee -a ../../${LOGFILE}
+			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
+			md5sum -c ./md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0_sars_cov2.md5 | tee -a ${LOGFILE}
 		fi
 	fi
-	echo "End time: `date`" | tee -a ../../${LOGFILE}
+	echo "End time: `date`" | tee -a ${LOGFILE}
 	cd ../
 fi
 
-echo 'End of script.' | tee -a ../${LOGFILE}
+echo 'End of script.' | tee -a ${LOGFILE}
