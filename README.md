@@ -56,7 +56,7 @@ Note: When using the pipeline for the Lung Cell Atlas, please do not change the 
 - e: ensembl release
 - g: genome release  
 (These flags all have defaults, check the documentation to see the defaults.)
-- w: path to directory (without trailing slash) in which to set up pipeline and store reference genome, if not present working directory
+- w: path to work directory (without trailing slash) in which to set up pipeline and store reference genome, if not present working directory
 - c: path to conda envs dir without trailing slash, e.g. /users/doejohn/miniconda3/envs
 - u: user:pass that gives access to the files to be downloaded (this is confidential and must be provided to you by your LCA contact person)
 
