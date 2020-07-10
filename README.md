@@ -55,8 +55,9 @@ Note: When using the pipeline for the Lung Cell Atlas, please do not change the 
 - s: species for reference genome 
 - e: ensembl release
 - g: genome release  
-(These flags all have defaults, check the documentation to see the defaults.)  
-- c: path to conda envs dir with trailing slash, e.g. /users/doejohn/miniconda3/envs/
+(These flags all have defaults, check the documentation to see the defaults.)
+- w: path to directory (without trailing slash) in which to set up pipeline and store reference genome, if not present working directory
+- c: path to conda envs dir without trailing slash, e.g. /users/doejohn/miniconda3/envs
 - u: user:pass that gives access to the files to be downloaded (this is confidential and must be provided to you by your LCA contact person)
 
 Moreover, the script is modular and it is possible to exclude each of the three parts, e.g. if they were already executed in a previous run. Default is set to true for all three.
@@ -69,7 +70,7 @@ Finally, there is an option to include Sars-cov2 in the reference genome:
 
 An example of a command to use (with fake user:pass) is:
 ```
-$ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/lisa/miniconda3/envs/ -u 12345a:6789b 
+$ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/lisa/miniconda3/envs -w /home/lisa/pipelines -u 12345a:6789b 
 ```
 
 

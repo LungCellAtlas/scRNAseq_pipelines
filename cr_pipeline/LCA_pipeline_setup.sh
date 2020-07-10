@@ -35,44 +35,47 @@ usage() {
 	
 	Lung Cell Atlas pipeline version: v${pipeline_version}
 
-	Usage: $(basename "$0") [-htmsegcuDCRS] 
+	Usage: $(basename "$0") [-htmsegwcuDCRS] 
+
 		Options:
 		-h 			show this help text
- 		-t <n_threads>		number of threads to be used by cellranger mkref 
- 					(default: ${nthreads})
- 		-m <mem_in_Gb>		memory in GB to be used by cellranger mkref 
- 					(default: ${memgb})
- 		-s <species>		species for genome building. Use homo_sapiens 
- 					for human. (default: ${species})
- 		-e <ensembl_release>	ensembl release of reference genome to build. 
- 					(default: ${ensrel})
- 		-g <genome_release> 	genome release, must match with the 
+		-t <n_threads>		number of threads to be used by cellranger mkref 
+					(default: ${nthreads})
+		-m <mem_in_Gb>		memory in GB to be used by cellranger mkref 
+					(default: ${memgb})
+		-s <species>		species for genome building. Use homo_sapiens 
+					for human. (default: ${species})
+		-e <ensembl_release>	ensembl release of reference genome to build. 
+					(default: ${ensrel})
+		-g <genome_release> 	genome release, must match with the 
 					corresponding Ensembl release (see also Ensembls 
 					fa file name for the release), use without the 
 					patch id (e.g. GRCh37; GRCh38, GRCm38) 
 					(default: ${genomestring})
-                -w <work_path>          Working path for the pipeline (path for fastq, and pipeline results)
- 		-c <path_to_envs_dir>	path to envs directory from your miniconda or 
+		-w <work_path>          path to directory (without trailing slash) in which 
+					to set up pipeline and store reference genome.	
+					(default: "${work_path}")
+		-c <path_to_envs_dir>	path to envs directory from your miniconda or 
 					anaconda, with trailing slash, e.g. 
 					/Users/doejohn/miniconda3/envs/
- 		-u <user:pass>		user:pass received from Lung Cell Atlas to 
+		-u <user:pass>		user:pass received from Lung Cell Atlas to 
 					acquire access to files for download
- 		-D <true|false>		include download of required files. Set this 
+		-D <true|false>		include download of required files. Set this 
 					to false if files were already downloaded and 
 					you want to skip this step. (default: ${create_env})
- 		-C <true|false>		include creation of conda environment. Set this to 
+		-C <true|false>		include creation of conda environment. Set this to 
 					false if conda environment is already created 
 					and you want to skip this step. 
 					(default: ${download_files})
- 		-R <true|false>		include building of reference genome. Set this 
+		-R <true|false>		include building of reference genome. Set this 
 					to false if reference genome has already been 
 					built and you want to skipt this step. 
 					(default: ${build_ref_genome})
- 		-S <true|false>		include Sars-cov2 in the reference genome. Set 
+		-S <true|false>		include Sars-cov2 in the reference genome. Set 
 					this to true if Sars-cov2 should be included. 
 					(default: ${incl_sarscov2})
-    
- 		
+	
+		
 HELP_USAGE
 }
 
@@ -98,10 +101,10 @@ while getopts ":ht:m:s:e:g:c:w:u:D:C:R:S:" opt; do
 		e ) ensrel=$OPTARG
 			;;
 		g ) genomestring=$OPTARG
-                        ;; 
+			;; 
 		c ) conda_envs_dir=$OPTARG
-                        ;;
-                w ) work_path=$OPTARG
+			;;
+		w ) work_path=$OPTARG
 			;;
 		u ) user_pass=$OPTARG
 			;;
@@ -123,9 +126,9 @@ while getopts ":ht:m:s:e:g:c:w:u:D:C:R:S:" opt; do
 		# the print and echo outputs are sent to stderr file?
 		# then exit 1
 		: ) printf "missing argument for -%s\n" "$OPTARG" >&2
-       		echo "$usage" >&2
-       		exit 1
-       		;;
+			echo "$usage" >&2
+			exit 1
+			;;
 	esac
 done
 # move to next argument, and go through loop again:
@@ -181,13 +184,13 @@ fi
 
 # check if conda_envs_dir is a directory:
 if [ $create_env == true ] || [ $build_ref_genome == true ]; then
-    # check if it is a directory (if not: exit), and if directory ends with /envs/. (If not, only print a warning.)
-    if ! [ -d $conda_envs_dir ]; then
-    	echo "Specified conda_envs_dir does not exist. Exiting." 
-    	exit 1
-    elif [[ $conda_envs_dir != */envs/ ]]; then
-    	echo "Warning: Specified conda envs directory does not end with \"/envs/\". Is this the correct directory?"
-    fi
+	# check if it is a directory (if not: exit), and if directory ends with /envs. (If not, only print a warning.)
+	if ! [ -d $conda_envs_dir ]; then
+		echo "Specified conda_envs_dir $conda_envs_dir does not exist. Exiting." 
+		exit 1
+	elif [[ $conda_envs_dir != */envs ]]; then
+		echo "Warning: Specified conda envs directory $conda_envs_dir does not end with \"/envs\". Make sure no trailing slash is included. Is this the correct directory?"
+	fi
 fi
 
 # if reference genome build is included, check if $incl_sarscov2 is either true or false:
@@ -207,15 +210,15 @@ fi
 
 # Log filenname
 LOGFILE=$work_path/"LOG_LCA_pipeline_setup.log"
-echo "Log file saved in : ${LOGFILE}"
 # Check if logfile exists
 if [ -f ${LOGFILE} ]; then
-    echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exit."
-    exit 1
+	echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exit."
+	exit 1
 fi
 
 # Create log file and add DATE
 echo `date` > ${LOGFILE}
+echo "Log file saved in : ${LOGFILE}"
 # print pipeline version
 echo "Lung Cell Atlas pipeline version: v${pipeline_version}" | tee -a ${LOGFILE}
 
@@ -258,9 +261,9 @@ echo "working path: $work_path" | tee -a ${LOGFILE}
 read -r -p "Are the parameters correct? Continue? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
-    echo "Parameters confirmed." | tee -a ${LOGFILE}
+	echo "Parameters confirmed." | tee -a ${LOGFILE}
 else
-    echo "Parameters not confirmed, exit." | tee -a ${LOGFILE}
+	echo "Parameters not confirmed, exit." | tee -a ${LOGFILE}
 	exit 1
 fi
 
@@ -293,12 +296,12 @@ cd $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
 
 # CREATE CONDA ENVIRONMENT, if $create_env == true:
 
-path_to_env="${conda_envs_dir}cr3-velocyto-scanpy"
+path_to_env="$conda_envs_dir/cr3-velocyto-scanpy"
 
 if [ $create_env == true ]; then
 	echo "Creating conda environment in ${path_to_env}... NOTE! This can take a few hours..." | tee -a ${LOGFILE}
 	echo "start time: `date`" | tee -a ${LOGFILE}
-	conda create --prefix $path_to_env -c ./conda-bld -c conda-forge -c bioconda -y cellranger=3.1.0=0 scanpy=1.4.4.post1=py_3 velocyto.py=0.17.17=py36hc1659b7_0 samtools=1.10=h9402c20_2 conda=4.8.2=py36_0 nextflow=19.10 java-jdk=8.0.112 star=2.7.5a | tee -a ${LOGFILE}
+	# conda create --prefix $path_to_env -c ./conda-bld -c conda-forge -c bioconda -y cellranger=3.1.0=0 scanpy=1.4.4.post1=py_3 velocyto.py=0.17.17=py36hc1659b7_0 samtools=1.10=h9402c20_2 conda=4.8.2=py36_0 nextflow=19.10 java-jdk=8.0.112 star=2.7.5a | tee -a ${LOGFILE}
 	echo "End time: `date`" | tee -a ${LOGFILE}
 fi
 
@@ -321,7 +324,7 @@ if [ $build_ref_genome == true ]; then
 	echo "This might take a few hours. Start time: `date`" | tee -a ${LOGFILE}
 	echo "For a detailed log of the genome building, check out the logfile in your ${work_path}/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes folder!" | tee -a ${LOGFILE}
 	if [ $incl_sarscov2 == false ]; then
-		#./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
+		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
