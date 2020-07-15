@@ -301,7 +301,7 @@ path_to_env="$conda_envs_dir/cr3-velocyto-scanpy"
 if [ $create_env == true ]; then
 	echo "Creating conda environment in ${path_to_env}... NOTE! This can take a few hours..." | tee -a ${LOGFILE}
 	echo "start time: `date`" | tee -a ${LOGFILE}
-	# conda create --prefix $path_to_env -c ./conda-bld -c conda-forge -c bioconda -y cellranger=3.1.0=0 scanpy=1.4.4.post1=py_3 velocyto.py=0.17.17=py36hc1659b7_0 samtools=1.10=h9402c20_2 conda=4.8.2=py36_0 nextflow=19.10 java-jdk=8.0.112 star=2.7.5a | tee -a ${LOGFILE}
+	conda create --prefix $path_to_env -c ./conda-bld -c conda-forge -c bioconda -y cellranger=3.1.0=0 scanpy=1.4.4.post1=py_3 velocyto.py=0.17.17=py36hc1659b7_0 samtools=1.10=h9402c20_2 conda=4.8.2=py36_0 nextflow=19.10 java-jdk=8.0.112 | tee -a ${LOGFILE}
 	echo "End time: `date`" | tee -a ${LOGFILE}
 fi
 
