@@ -141,7 +141,7 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_run.sh -p local -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -x "/home/lisa/LCA_pipeline/Samples_testdata_fullrun.txt" -u true -l https://fake/upload/link -o /home/lisa/pipelines/output -c 22 -m 80 -t 11 -o outdir_LCA  
+$ ./LCA_pipeline_run.sh -p local -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -x "/home/lisa/LCA_pipeline/Samples_testdata_fullrun.txt" -u true -l https://fake/upload/link -o /home/lisa/pipelines/output -c 22 -m 80 -t 11  
 ``` 
 
 ## In case of problems
