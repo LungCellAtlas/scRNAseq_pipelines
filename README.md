@@ -102,7 +102,7 @@ $ ./LCA_pipeline_testrun.sh -p cluster -e /home/lisa/miniconda3/envs/cr3-velocyt
 
 ### run the pipeline on your data
 
-Once you have completed the testrun successfully, you can run the pipeline on your own data. This is similar to doing the testrun, except now you'll need to create a tsv (or .xls or tab-separated .txt) file with information about the samples you want to run the pipeline on. An example with one sample is shown [here](docs/example_sample_table.txt). The table should be a tab-separated file containing the samples, one line per sample. The sample header must consist of the following fields.  
+Once you have completed the testrun successfully, you can run the pipeline on your own data. This is similar to doing the testrun, except now you'll need to create a tsv (or .xls or tab-separated .txt) file with information about the samples you want to run the pipeline on. An example with one sample is shown [here](docs/Samples_file_example.xls). The table should be a tab-separated file containing the samples, one line per sample. The sample header must consist of the following fields.  
 
 * Sample: Name of the sample (must match the names of the fastq files)
 * ncells: Estimated number of cells

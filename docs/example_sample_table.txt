@@ -1,2 +1,0 @@
-Sample	ncells	fastqpath	refindex	refgtf	chemistry
-sub_5k_pbmc_v3	5000	/Users/lisa.sikkema/pipeline_testrun/sc_processing_cellranger_LCA_v0.1.0/testdata/	/Users/lisa.sikkema/pipeline_testrun/sc_processing_cellranger_LCA_v0.1.0/refgenomes/homo_sapiens_GRCh38_ensrel99_cr3.1.0	/Users/lisa.sikkema/pipeline_testrun/sc_processing_cellranger_LCA_v0.1.0/refgenomes/homo_sapiens_GRCh38_ensrel99_cr3.1.0/genes/genes.gtf	SC3Pv3
