@@ -30,19 +30,13 @@ $ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 $ sh Miniconda3-latest-Linux-x86_64.sh
 ```
 
-#### Required scripts:  
-The scripts listed below can be found in the cr_pipeline folder of this repo. Clone the repo to get all of them, or download individually:
-For setting up and testing the pipeline, download the following two bash scripts:  
-LCA_pipeline_setup.sh  
-LCA_pipeline_testrun.sh  
-For running the pipeline on your own data, download the final bash script:  
-LCA_pipeline_run.sh  
-Place the scripts in the directory from where you want to set up and run the pipeline.  
+#### Clone the repo:  
+To run the pipeline, clone this repo. You will need to run three scripts to set up, test, and run respectively.
 
 ### setting up:  
-The first script, LCA_pipeline_setup.sh, will download the files required for the pipeline, 
-it will create the needed conda environment with set versioning of the needed software, and finally it will build a reference genome. 
-If everything goes well, this should require only one command in your terminal! Once that is done, you are ready to use the pipeline.
+The first script, LCA_pipeline_setup.sh, will download the files required to set up your conda environment (including cellranger), and the files to test the pipeline.
+It will then create the required conda environment with set versioning of the needed software, and finally it will build a reference genome. It might take a few hours to run this entire script.
+If everything goes well, setting up should require only one command in your terminal! Once that is done, you are ready to use the pipeline.
 
 Detailed documentation on how to use the script is available under 
 ```
@@ -56,7 +50,6 @@ Note: When using the pipeline for the Lung Cell Atlas, please do not change the 
 - e: ensembl release
 - g: genome release  
 (These flags all have defaults, check the documentation to see the defaults.)
-- w: path to work directory (without trailing slash) in which to set up pipeline and store reference genome, if not present working directory
 - c: path to conda envs dir without trailing slash, e.g. /users/doejohn/miniconda3/envs
 - u: user:pass that gives access to the files to be downloaded (this is confidential and must be provided to you by your LCA contact person)
 
@@ -70,14 +63,14 @@ Finally, there is an option to include Sars-cov2 in the reference genome:
 
 An example of a command to use (with fake user:pass) is:
 ```
-$ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/lisa/miniconda3/envs -w /home/lisa/pipelines -u 12345a:6789b 
+$ ./LCA_pipeline_setup.sh -t 12 -m 50 -c /home/lisa/miniconda3/envs -u 12345a:6789b 
 ```
 
 
 ### testrun the installed pipeline:  
 
 We made a testrun script "LCA_pipeline_testrun.sh" with a small toy dataset from https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_v3 (downloaded automatically during pipeline setup above) to make sure 
-that your pipeline works as expected. (Note that this testrun is designed for the pipeline excluding SARS-cov2 in the reference genome.) The script can be run with only one line in terminal, and should take between half an hour and a few hours to run (depending on your computing power).
+that your pipeline works as expected. (Note that this testrun is designed for the pipeline __excluding__ SARS-cov2 in the reference genome.) The script can be run with only one line in terminal, and should take between half an hour and a few hours to run (depending on your computing power).
 It runs the entire pipeline on the toy data,
 and includes an option to transfer the output files, exluding .bam and .bai files, to a secure storage at the Helmholtz Center in Munich, Germany.  
 
@@ -91,7 +84,8 @@ We will also give a brief outline here. The script requires the following argume
 - s: sitename (name of site where data was generated, e.g. SANGER or HELMHOLTZ)
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
 - l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.
-
+Optional argument specifing output dir:
+- o: path to output directory, without trailing slash (see default under -h)
 Optional arguments specifying resources (check default settings in function documentation):  
 - c: number of cores for cellranger
 - m: memory to be used by cellranger in Gb
@@ -103,7 +97,7 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_testrun.sh -p cluster -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -l https://fake/example/link -c 20 -m 90 -t 10 -q hh_cpu -C 'nice=10000 -t 2:00:00 --qos=hh_stndrd'
+$ ./LCA_pipeline_testrun.sh -p cluster -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -u true -o /home/lisa/pipelines/output -l https://fake/example/link -c 20 -m 90 -t 10 -q hh_cpu -C 'nice=10000 -t 2:00:00 --qos=hh_stndrd'
 ``` 
 
 ### run the pipeline on your data
@@ -129,10 +123,12 @@ We will give a brief outline of the arguments here as well, partly overlapping w
 - e: path to conda environment that was created during pipeline setup, it should have the name "cr3-velocyto-scanpy"
 - s: sitename (name of site where data was generated, e.g. SANGER or HELMHOLTZ)
 - n: dataset name. This name will be added to the output tar file.
-- o: name of, or path to the output directory to be used.
 - x: path to the sample table file (.tsv, .xls, etc.) that contains the required sample info
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
 - l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.
+
+Optional argument specifying output dir
+- o: path to output directory in which to store pipeline output, without trailing slash (check -h for default setting)
 
 Optional arguments specifying resources (check default settings in function documentation):  
 - c: number of cores for cellranger
@@ -145,7 +141,7 @@ Finally, if using profile "cluster", there are some additional arguments to pass
 
 An example of a full command to use is:  
 ```
-$ ./LCA_pipeline_run.sh -p local -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -u true -c 22 -m 80 -t 11 -o outdir_LCA -x "/home/lisa/LCA_pipeline/Samples_testdata_fullrun.txt" -l https://fake/upload/link
+$ ./LCA_pipeline_run.sh -p local -e /home/lisa/miniconda3/envs/cr3-velocyto-scanpy -s HELMHOLTZ -n lung_A1_cohort -x "/home/lisa/LCA_pipeline/Samples_testdata_fullrun.txt" -u true -l https://fake/upload/link -o /home/lisa/pipelines/output -c 22 -m 80 -t 11 -o outdir_LCA  
 ``` 
 
 ## In case of problems

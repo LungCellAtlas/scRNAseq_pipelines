@@ -23,7 +23,7 @@ memgb="48"
 # Include Sars-cov2 genome:
 incl_sarscov2=false
 # Working path
-work_path="./"
+work_path="."
 # script parts to run/skip:
 download_files=true
 create_env=true
@@ -35,7 +35,7 @@ usage() {
 	
 	Lung Cell Atlas pipeline version: v${pipeline_version}
 
-	Usage: $(basename "$0") [-htmsegwcuDCRS] 
+	Usage: $(basename "$0") [-htmsegcuDCRS] 
 
 		Options:
 		-h 			show this help text
@@ -52,9 +52,6 @@ usage() {
 					fa file name for the release), use without the 
 					patch id (e.g. GRCh37; GRCh38, GRCm38) 
 					(default: ${genomestring})
-		-w <work_path>          path to directory (without trailing slash) in which 
-					to set up pipeline and store reference genome.	
-					(default: "${work_path}")
 		-c <path_to_envs_dir>	path to envs directory from your miniconda or 
 					anaconda, with trailing slash, e.g. 
 					/Users/doejohn/miniconda3/envs/
@@ -84,7 +81,7 @@ HELP_USAGE
 # go through optional arguments:
 # preceding colon after getopts: don't allow for any automated error messages
 # colon following flag letter: this flag requires an argument
-while getopts ":ht:m:s:e:g:c:w:u:D:C:R:S:" opt; do
+while getopts ":ht:m:s:e:g:c:u:D:C:R:S:" opt; do
 	# case is bash version of 'if' that allows for multiple scenarios
 	case "$opt" in
 		# if h is added, print usage and exit
@@ -103,8 +100,6 @@ while getopts ":ht:m:s:e:g:c:w:u:D:C:R:S:" opt; do
 		g ) genomestring=$OPTARG
 			;; 
 		c ) conda_envs_dir=$OPTARG
-			;;
-		w ) work_path=$OPTARG
 			;;
 		u ) user_pass=$OPTARG
 			;;
@@ -166,15 +161,6 @@ if [ $download_files == true ] && [ -z $user_pass ]; then
 	exit 1
 fi
 
-# check if sc_processing_cellranger_LCA_v${pipeline_version} exists:
-if ! [ -d $work_path/sc_processing_cellranger_LCA_v${pipeline_version} ] && [ $download_files == false ]; then
-		echo "There is no folder named $work_path/sc_processing_cellranger_LCA_v${pipeline_version}, in which the downloaded pipeline files should be." | tee -a ${LOGFILE}
-		echo "If you want to download the pipeline files, set -D flag to true. Exiting."
-		exit 1
-fi
-
-
-
 
 # check if conda_envs_dir argument was passed:
 if [[ ($create_env == true || $build_ref_genome == true) && -z $conda_envs_dir ]]; then 
@@ -208,6 +194,9 @@ fi
 
 # CREATE LOG AND PRINT PARAMETERS
 
+# cd into workpath and store full path
+cd $work_path
+work_path=`pwd`
 # Log filenname
 LOGFILE=$work_path/"LOG_LCA_pipeline_setup.log"
 # Check if logfile exists
@@ -255,7 +244,6 @@ echo "cellranger version expected: ${expectedcrv}, Ensembl release: ${ensrel}, G
 echo "nthreads: ${nthreads}, memgb: ${memgb}" | tee -a ${LOGFILE}
 echo "user:pass provided" | tee -a ${LOGFILE}
 echo "conda_envs_dir: $conda_envs_dir" | tee -a ${LOGFILE}
-echo "working path: $work_path" | tee -a ${LOGFILE}
 
 # let user confirm parameters:
 read -r -p "Are the parameters correct? Continue? [y/N] " response
@@ -267,8 +255,7 @@ else
 	exit 1
 fi
 
-# go in working path
-cd $work_path
+
 
 
 # DOWNLOAD THE REQUIRED FILES, if $download_files == true:
@@ -276,23 +263,22 @@ if [ $download_files == true ]; then
 	# now download the tar file:
 	echo "We will download the necessary files now, this shouldn't take too long..." | tee -a ${LOGFILE}
 
-	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/lca_cr_pipeline.tar.gz --output $work_path/lca_cr_pipeline.tar.gz -k
-	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/LCA_pipeline_setup_CHECKSUM --output $work_path/LCA_pipeline_setup_CHECKSUM -k
+	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/LCA_pipeline_downloads.tar.gz --output $work_path/LCA_pipeline_downloads.tar.gz -k
+	curl --user $user_pass https://hmgubox2.helmholtz-muenchen.de/public.php/webdav/LCA_pipeline_downloads_CHECKSUM --output $work_path/LCA_pipeline_downloads_CHECKSUM -k
 
 	echo "Done." | tee -a ${LOGFILE}
 	# validate that file is intact and not corrupted using checksum:
 	echo "Checking md5sum of downloaded file..." | tee -a ${LOGFILE}
-	md5sum -c $work_path/LCA_pipeline_setup_CHECKSUM | tee -a ${LOGFILE}
+	md5sum -c $work_path/LCA_pipeline_downloads_CHECKSUM | tee -a ${LOGFILE}
 	# now unpack downloaded file:
 	echo "Unpacking downloaded tar file now..." | tee -a ${LOGFILE}
-	tar -xzvf $work_path/lca_cr_pipeline.tar.gz | tee -a ${LOGFILE}
+	tar -xzvf $work_path/LCA_pipeline_downloads.tar.gz | tee -a ${LOGFILE}
 	echo "Done" | tee -a ${LOGFILE}
-	echo "adding version number ${pipeline_version} to unpacked pipeline folder: $work_path/sc_processing_cellranger_LCA_v${pipeline_version}" | tee -a ${LOGFILE}
-	mv $work_path/sc_processing_cellranger $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
+	# move directories up one folder and remove donwload dir + tar
+	mv $work_path/LCA_pipeline_downloads/* $work_path/ 2>&1 | tee -a ${LOGFILE}
+	rmdir $work_path/LCA_pipeline_downloads 2>&1 | tee -a ${LOGFILE}
+	rm $work_path/LCA_pipeline_downloads.tar.gz 2>&1 | tee -a ${LOGFILE}
 fi
-
-# cd into resulting folder
-cd $work_path/sc_processing_cellranger_LCA_v${pipeline_version}
 
 # CREATE CONDA ENVIRONMENT, if $create_env == true:
 
@@ -320,11 +306,11 @@ if [ $build_ref_genome == true ]; then
 	cd refgenomes
 	echo "Currently working in folder `pwd`" | tee -a ${LOGFILE}
 	# now run the script to build the genome:
-	echo "We will now start building the reference genome, using the script ${work_path}/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ${LOGFILE}
+	echo "We will now start building the reference genome, using the script ${work_path}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ${LOGFILE}
 	echo "This might take a few hours. Start time: `date`" | tee -a ${LOGFILE}
-	echo "For a detailed log of the genome building, check out the logfile in your ${work_path}/sc_processing_cellranger_LCA_v${pipeline_version}/refgenomes folder!" | tee -a ${LOGFILE}
+	echo "For a detailed log of the genome building, check out the logfile in your ${work_path}/refgenomes folder!" | tee -a ${LOGFILE}
 	if [ $incl_sarscov2 == false ]; then
-		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
+		# ./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}

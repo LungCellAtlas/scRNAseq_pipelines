@@ -1,0 +1,2 @@
+Sample	ncells	fastqpath	refindex	refgtf	chemistry
+sub_5k_pbmc_v3	5000	{workdir}/testdata/	{workdir}/refgenomes/homo_sapiens_GRCh38_ensrel99_cr3.1.0	{workdir}/refgenomes/homo_sapiens_GRCh38_ensrel99_cr3.1.0/genes/genes.gtf	SC3Pv3
