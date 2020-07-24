@@ -306,6 +306,10 @@ if [ $build_ref_genome == true ]; then
 	conda activate $path_to_env # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
 	# now start building the reference genome!
 	# cd into the correct folder;
+
+	if [ ! -d ${work_path}/refgenomes ]; then
+ 		mkdir ${work_path}/refgenomes
+	fi
 	cd ${work_path}/refgenomes
 	pwd
 	echo "Currently working in folder `pwd`" | tee -a ${LOGFILE}
