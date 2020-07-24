@@ -23,7 +23,9 @@ memgb="48"
 # Include Sars-cov2 genome:
 incl_sarscov2=false
 # Working path
-work_path="."
+#work_path="."
+work_path="/share/data2/000-10x-HCA-bams/HCA_test/"
+script_path="/home/becavin/scRNAseq_pipelines/"
 # script parts to run/skip:
 download_files=true
 create_env=true
@@ -55,6 +57,7 @@ usage() {
 		-c <path_to_envs_dir>	path to envs directory from your miniconda or 
 					anaconda, with trailing slash, e.g. 
 					/Users/doejohn/miniconda3/envs/
+
 		-u <user:pass>		user:pass received from Lung Cell Atlas to 
 					acquire access to files for download
 		-D <true|false>		include download of required files. Set this 
@@ -303,26 +306,27 @@ if [ $build_ref_genome == true ]; then
 	conda activate $path_to_env # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
 	# now start building the reference genome!
 	# cd into the correct folder;
-	cd refgenomes
+	cd ${work_path}/refgenomes
+	pwd
 	echo "Currently working in folder `pwd`" | tee -a ${LOGFILE}
 	# now run the script to build the genome:
-	echo "We will now start building the reference genome, using the script ${work_path}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ${LOGFILE}
+	echo "We will now start building the reference genome, using the script ${script_path}/refgenomes/create_cellranger_ref_from_ensembl.sh" | tee -a ${LOGFILE}
 	echo "This might take a few hours. Start time: `date`" | tee -a ${LOGFILE}
 	echo "For a detailed log of the genome building, check out the logfile in your ${work_path}/refgenomes folder!" | tee -a ${LOGFILE}
 	if [ $incl_sarscov2 == false ]; then
-		# ./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
+		${script_path}/refgenomes/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true | tee -a ${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
-			md5sum -c ./md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0.md5 | tee -a ${LOGFILE}
+			md5sum -c ${script_path}/refgenomes/md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0.md5 | tee -a ${LOGFILE}
 		fi
 	elif [ $incl_sarscov2 == true ]; then
 		echo "Including Sars-cov2 genome into the reference..." | tee -a ${LOGFILE}
-		./create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ${LOGFILE}
+		${script_path}/refgenomes/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f ./sars_cov2_genome/sars_cov2_genome.gtf -a ./sars_cov2_genome/sars_cov2.fasta | tee -a ${LOGFILE}
 		# check md5sum if default parameters were used:
 		if [ ${genomestring} == "GRCh38" ] && [ ${ensrel} == "99" ] && [ ${species} == "homo_sapiens" ] && [ ${expectedcrv} == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
-			md5sum -c ./md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0_sars_cov2.md5 | tee -a ${LOGFILE}
+			md5sum -c ${script_path}/refgenomes/md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0_sars_cov2.md5 | tee -a ${LOGFILE}
 		fi
 	fi
 	echo "End time: `date`" | tee -a ${LOGFILE}
