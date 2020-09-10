@@ -15,8 +15,7 @@ samtools_thr="12"
 localmemGB="80"
 # environment name for check of path:
 env_name="cr3-velocyto-scanpy"
-# output directory
-out_dir="."
+
 
 # set required parameters from optional flag arguments to "", so that later on we can check if an actual argument was passed:
 # profile (-p flag)
@@ -27,6 +26,8 @@ conda_env_dir_path=""
 sitename=""
 # upload files to Helmholtz secure folder, boolean:
 upload=""
+# output directory
+out_dir=""
 # clusterOptions:
 ClusterOptions=""
 # queue
@@ -40,7 +41,7 @@ usage() {
 
 	LCA pipeline version: ${pipeline_version}
 	
-	Usage: $(basename "$0") [-hpesulocmtqC]
+	Usage: $(basename "$0") [-hpesulowcmtqC]
 		
 		-h 				show this help message
 
@@ -50,9 +51,9 @@ usage() {
  		-p <cluster|local> 		"Profile" for computation. Must be set to either 
  						local or cluster. Use local if pipeline can be 
  						run on current machine. Use cluster if jobs need 
- 						to be submitted to cluster. See -q and -C flag 
- 						below for further explanation about cluster 
- 						profile.
+ 						to be submitted to cluster within the script. 
+ 						See -q and -C flag below for further explanation 
+ 						about cluster profile.
  		
  		-e <path_to_conda_environment> 	Path to the directory of 
  						$env_name conda environment that was installed 
@@ -73,11 +74,14 @@ usage() {
 						This link will be provided to you by your LCA 
 						contact person.
 
-		Optional argument specifying output directory:
+		-o <out_dir>			Path to output directory in which the output 
+						of the testrun will be stored. (This can be the same
+						as the work_dir (-w), if wanted.)
 
-		-o <out_dir>			Path to output directory, without trailing slash,
-						in which the output of the testrun will be stored.
-						(default: "${out_dir}")
+		-w <work_dir>			Path to working directory as used for pipeline
+						setup. This directory contains the reference genome 
+						that was built in the refgenomes dir as well as the data 
+						for the testrun in the testdata dir
 
  		Optional arguments specifying resources:
  		
@@ -94,7 +98,7 @@ usage() {
  		Optional arguments if profile (-p) is set to cluster, and if cluster is 
  		a SLURM cluster. (If cluster is not SLURM, please visit the nextflow 
  		documentation (https://www.nextflow.io/docs/latest/executor.html) for 
- 		other executors and edit the ./nfpipeline/nextflow.config file 
+ 		other executors and edit the ./conf/nextflow.config file 
  		accordingly.):
  		
  		-q <que_name>			Queue. Name of the queue/partition to be used.
@@ -114,8 +118,8 @@ HELP_USAGE
 
 # go through optional arguments:
 # preceding colon after getopts: don't allow for any automated error messages
-# colon following flag letter: this flag requires an argument
-while getopts ":hp:e:s:u:l:o:c:m:t:q:C:" opt; do
+# colon following flag letter: this flag takes in an argument
+while getopts ":hp:e:s:u:l:o:w:c:m:t:q:C:" opt; do
 	# case is bash version of 'if' that allows for multiple scenarios
 	case "$opt" in
 		# if h is added, print usage and exit
@@ -133,6 +137,8 @@ while getopts ":hp:e:s:u:l:o:c:m:t:q:C:" opt; do
 		l ) upload_link=$OPTARG
 			;;
 		o ) out_dir=$OPTARG
+			;;
+		w)  work_dir=$OPTARG
 			;;
 		c ) localcores=$OPTARG
 			;;
@@ -163,8 +169,9 @@ done
 # move to next argument, and go through loop again:
 shift $((OPTIND -1))
 
-# store pwd as work_dir
-work_dir=`pwd`
+# store parent dir as script_dir
+cd ..
+script_dir=`pwd`
 
 
 
@@ -219,9 +226,15 @@ if [ $upload == true ] && [ -z $upload_link ]; then
 	echo "-u is set to true, but no upload link was provided under -l. Exiting."
 	exit 1
 fi
+
+# check if argument was provided for -o flag
+if [ -z $out_dir ]; then
+	echo "no argument for output directory was provided under -o flag. Exiting."
+	exit 1
+fi
 # check if output dir is a directory:
 if ! [ -d $out_dir ]; then
-	echo "output dir $out_dir is not a directory. Exiting."
+	echo "output dir $out_dir as provided under -o flag is not a directory. Exiting."
 	exit 1
 fi
 # check if outdir has trailing slash, and remove it if it's there:
@@ -232,6 +245,35 @@ fi
 # # check if directory testrun_v${pipeline_version} already exists
 if [ -d $out_dir/testrun_v${pipeline_version} ]; then
 	echo "directory '${out_dir}/testrun_v${pipeline_version}' already exists. Please remove testrun_v${pipeline_version} directory. Exiting."
+	exit 1
+fi
+
+# check if working directory argument was passed:
+if [ -z $work_dir ]; then
+	echo "no argument for work directory was provided under -w flag. Exiting."
+	exit 1
+fi
+# check if work dir is a directory
+if ! [ -d $work_dir ]; then
+	echo "work dir $work_dir as provided under -w flag is not a directory. Exiting."
+	exit 1
+fi
+# check if workdir has trailing slash, and remove it if it's there:
+if [[ $work_dir == *"/" ]]; then
+	echo "removing trailing slash from work dir."
+	work_dir=${work_dir::-1}
+fi
+# check if work dir has folders refgenomes and testdata
+if ! [ -d $work_dir/refgenomes ]; then
+	echo "work dir $work_dir as provided under -w flag has no subdirectory named 'refgenomes'."
+	echo "Make sure the workdirectory corresponds to the work directory provided during pipeline setup."
+	echo "This is the folder where the refgenome was built. Exiting."
+	exit 1
+fi
+if ! [ -d $work_dir/testdata ]; then
+	echo "work dir $work_dir as provided under -w flag has no subdirectory named 'testdata'."
+	echo "Make sure the workdirectory corresponds to the work directory provided during pipeline setup."
+	echo "This is the folder in which the testdata were downloaded. Exiting."
 	exit 1
 fi
 
@@ -248,8 +290,7 @@ cd testrun_v${pipeline_version}
 
 # Log filenname
 logfile_dir=`pwd`
-LOGFILE="${logfile_dir}/LOG_LCA_pipeline_testrun.log"
-# Log filde directory:
+LOGFILE=$logfile_dir/LOG_LCA_pipeline_testrun.log
 
 # check if logfile already exists:
 if [ -f ${LOGFILE} ]; then
@@ -258,7 +299,7 @@ if [ -f ${LOGFILE} ]; then
 else
 	# Create log file and add DATE
 	echo `date` > ${LOGFILE}
-	echo "LOG created in testrun_v${pipeline_version} directory: ${LOGFILE}" | tee -a ${LOGFILE}
+	echo "LOG created under ${LOGFILE}"
 fi
 # echo pipeline version:
 echo "Lung Cell Atlas pipeline version: ${pipeline_version}" | tee -a ${LOGFILE}
@@ -272,7 +313,8 @@ echo "n cores for cellranger: ${localcores}, n cores for samtools: ${samtools_th
 echo "profile: ${profile}" | tee -a ${LOGFILE}
 echo "sitename: ${sitename}" | tee -a ${LOGFILE}
 echo "path to conda environment directory: ${conda_env_dir_path}" | tee -a ${LOGFILE}
-echo "out_dir: $out_dir" | tee -a ${LOGFILE}
+echo "out_dir (testdir appended): $out_dir/testrun_v${pipeline_version}" | tee -a ${LOGFILE}
+echo "work_dir: $work_dir" | tee -a ${LOGFILE}
 
 # let user confirm parameters:
 read -r -p "Are the parameters correct? Continue? [y/N] " response
@@ -298,8 +340,8 @@ conda activate $conda_env_dir_path # this cannot be put into LOGFILE, because th
 cd run
 # prepare file with sample name and info, by replacing the "{workdir}" string with our actual work_dir,
 # and storing the result in a new textfile:
-sed "s|{workdir}|${work_dir}|g" $work_dir/samplefiles/Samples_testdata_template.xls > $work_dir/samplefiles/Samples_testdata_testrun.txt | tee -a ${LOGFILE}
-echo "Using $work_dir/samplefiles/Samples_testdata_testrun.txt as sample file." | tee -a ${LOGFILE}
+sed "s|{workdir}|${work_dir}|g" $script_dir/test/Samples_testdata_template.xls > $out_dir/testrun_v${pipeline_version}/Samples_testdata_testrun.txt | tee -a ${LOGFILE}
+echo "Using $out_dir/testrun_v${pipeline_version}/Samples_testdata_testrun.txt as sample file." | tee -a ${LOGFILE}
 # prepare extra arguments for nextflow command
 nf_add_arguments=""
 if ! [ -z $queue ]; then
@@ -312,7 +354,7 @@ fi
 echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${LOGFILE}
 # run nextflow from subshell, so that we can push it to bg without problems if we want. Output is still added to Log
 (
-nextflow run $work_dir/nfpipeline/sc_processing_r7.nf -profile $profile -c $work_dir/nfpipeline/nextflow.config --outdir $out_dir/testrun_v${pipeline_version}/ --samplesheet $work_dir/samplefiles/Samples_testdata_testrun.txt --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
+nextflow run $script_dir/src/sc_processing_r7.nf -profile $profile -c $script_dir/conf/nextflow.config --outdir $out_dir/testrun_v${pipeline_version}/ --samplesheet $out_dir/testrun_v${pipeline_version}/Samples_testdata_testrun.txt --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
 ) | tee -a ${LOGFILE}
 echo "Done. End time nf run: `date`" | tee -a ${LOGFILE}
 # check if run was successfull. In that case, there should be a cellranger directory in the testrun_v${pipeline_version} directory
@@ -339,10 +381,13 @@ echo "folder containing tar file: `pwd`" | tee -a ${LOGFILE}
 tar --exclude='*.bam' --exclude='*.bai' --exclude=run -czvf ${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz  $out_dir/testrun_v${pipeline_version} | tee -a ${LOGFILE}
 echo "Done" | tee -a ${LOGFILE}
 
+# move the file into the output directory (that was just tarred):
+mv $out_dir/${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz $out_dir/testrun_v${pipeline_version}/
+
 # now upload the output to Helmholtz Nextcloud
 if [ $upload == true ]; then
 	echo "We will now upload output to Helmholtz secure folder" | tee -a ${LOGFILE}
-	$work_dir/file_sharing/cloudsend.sh $out_dir/${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz $upload_link 2>&1 | tee -a ${LOGFILE} # redirect output of shellscript to logfile
+	$script_dir/src/cloudsend.sh $out_dir/testrun_v${pipeline_version}/${sitename}_${date_today_long}.testrun_v${pipeline_version}.tar.gz $upload_link 2>&1 | tee -a ${LOGFILE} # redirect output of shellscript to logfile
 fi
 
 # end

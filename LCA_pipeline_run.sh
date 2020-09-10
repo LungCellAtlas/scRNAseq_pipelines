@@ -15,8 +15,6 @@ samtools_thr="12"
 localmemGB="80"
 # environment name for check of path:
 env_name="cr3-velocyto-scanpy"
-# output directory
-out_dir="."
 
 # set required parameters from optional flag arguments to "", so that later on we can check if an actual argument was passed:
 # profile (-p flag)
@@ -27,6 +25,8 @@ conda_env_dir_path=""
 sitename=""
 # dataset name (-n flag)
 dataset_name=""
+# output directory
+out_dir=""
 # upload files to Helmholtz secure folder, boolean:
 upload=""
 # clusterOptions:
@@ -46,18 +46,18 @@ usage() {
 	Lung Cell Atlas pipeline version: v${pipeline_version}
 
 
-	Usage: $(basename "$0") [-hpesnuloxcmtqC]
+	Usage: $(basename "$0") [-hpesnulxocmtqC]
 		
 		-h 				show this help message
 
  		Mandatory arguments:
  		
  		-p <cluster|local> 		"Profile" for computation. Must be set to either 
- 						local or cluster. Use local if pipeline can be 
+ 						local or cluster. Use local if complete script can be 
  						run on current machine. Use cluster if jobs need 
- 						to be submitted to cluster. See -q and -C flag 
- 						below for further explanation about cluster 
- 						profile.
+ 						to be submitted to cluster from within the script. 
+ 						See -q and -C flag below for further explanation about 
+ 						cluster profile.
  		
  		-e <path_to_conda_environment> 	Path to the directory of $env_name 
  						conda environment that was installed 
@@ -82,18 +82,16 @@ usage() {
 						contact person. 
 
 		-x <path_to_sample_table_file>	Path to the file that contains a table
-						the required sample information. For more detailed
+						with the required sample information. For more detailed
 						instructions on what the file should look like, 
 						check the LCA_pipeline GitHub Readme.
 						Alternatively, and if you have run the pipeline 
 						testrun script before, you can check out the example
-						file at ./samplefiles/Samples_testdata_testrun.txt
+						file in its output directory, named 
+						Samples_testdata_testrun.txt
 
-		Optional argument specifying output dir:
-
-		-o <output_dir_name>		Path to output directory, without trailing slash,
+		-o <output_dir_name>		Path to output directory specific for this dataset,
 						in which to store the output of the pipeline run. 
-						(Default: "${out_dir}")
 
  		Optional arguments specifying resources:
  		
@@ -110,8 +108,7 @@ usage() {
  		Optional arguments if profile (-p) is set to cluster, and if cluster is 
  		a SLURM cluster. (If cluster is not SLURM, please visit the nextflow 
  		documentation (https://www.nextflow.io/docs/latest/executor.html) for 
- 		other executors and edit the 
- 		[...]/sc_processing_cellranger_LCA_v${pipeline_version}/nfpipeline/nextflow.config file 
+ 		other executors and edit the [...]/conf/nextflow.config file 
  		accordingly.):
  		
  		-q <que_name>			Queue. Name of the queue/partition to be used.
@@ -131,8 +128,8 @@ HELP_USAGE
 
 # go through optional arguments:
 # preceding colon after getopts: don't allow for any automated error messages
-# colon following flag letter: this flag requires an argument
-while getopts ":hp:e:s:n:c:m:t:q:u:l:o:x:C:" opt; do
+# colon following flag letter: this flag takes in an argument
+while getopts ":hp:e:s:n:c:m:t:q:u:l:x:o:C:" opt; do
 	# case is bash version of 'if' that allows for multiple scenarios
 	case "$opt" in
 		# if h is added, print usage and exit
@@ -240,6 +237,12 @@ if [ $upload == true ] && [ -z $upload_link ]; then
 	echo "-u is set to true, but no upload link was provided under -l. Exiting."
 	exit 1
 fi
+
+# check if output dir was provided:
+if [ -z $out_dir ]; then 
+	echo "No output directory was provided under flag -o. Exiting"
+	exit 1
+fi
 # check if output dir is a directory:
 if ! [ -d $out_dir ]; then
 	echo "output dir $out_dir is not a directory. Exiting."
@@ -263,8 +266,8 @@ if ! [ -f $path_to_sample_table ]; then
 fi
 
 
-# store pwd as work_dir:
-work_dir=`pwd`
+# store pwd as script_dir:
+script_dir=`pwd`
 
 # cd into output directory
 cd $out_dir
@@ -278,13 +281,14 @@ if [ -d pipelinerun_v${pipeline_version} ]; then
 	exit 1
 fi
 # create directory called pipelinerun_v${pipeline_version}/run and cd into it
-echo "creating directory 'pipelinerun_v${pipeline_version}'' in output directory" 
+echo "creating directory 'pipelinerun_v${pipeline_version}' in output directory" 
 mkdir -p pipelinerun_v${pipeline_version}/run
 cd pipelinerun_v${pipeline_version}
 
 # Log filenname
 logfile_dir=`pwd`
-LOGFILE="${logfile_dir}/LOG_LCA_pipeline_run.log"
+LOGFILE=$logfile_dir/LOG_LCA_pipeline_run.log
+
 # check if logfile already exists:
 if [ -f ${LOGFILE} ]; then
     echo "ERROR: LOG file ${LOGFILE} already exists. please remove. exiting." 
@@ -333,16 +337,21 @@ cd run
 # prepare extra arguments for nextflow command
 nf_add_arguments=""
 if ! [ -z $queue ]; then
-	nf_add_arguments="--queue ${queue}"
+	nf_add_arguments="--queue ${queue} "
 fi
 if ! [ -z "$ClusterOptions" ]; then
-	nf_add_arguments="${nf_add_arguments} --clusterOpt '${ClusterOptions}'"
+	nf_add_arguments="${nf_add_arguments}--clusterOpt '${ClusterOptions}'"
 fi
 # now run nextflow command:
 echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${LOGFILE}
 # run nextflow from subshell, so that we can still push it to bg if we want, and store the output
+# nfcommand="nextflow run $script_dir/src/sc_processing_r7.nf -profile $profile -c $script_dir/src/nextflow.config --outdir $out_dir/pipelinerun_v${pipeline_version}/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg $nf_add_arguments"
+# echo "Nextflow command: ${nfcommand}"
+# (
+# ${nfcommand}
+# ) | tee -a ${LOGFILE}
 (
-nextflow run $work_dir/nfpipeline/sc_processing_r7.nf -profile $profile -c $work_dir/nfpipeline/nextflow.config --outdir $out_dir/pipelinerun_v${pipeline_version}/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
+nextflow run $script_dir/src/sc_processing_r7.nf -profile $profile -c $script_dir/conf/nextflow.config --outdir $out_dir/pipelinerun_v${pipeline_version}/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
 ) | tee -a ${LOGFILE}
 echo "Done. End time nf run: `date`" | tee -a ${LOGFILE}
 # check if run was successfull. In that case, there should be a cellranger directory in the testrun directory
@@ -367,11 +376,13 @@ excluding .bam and .bai files, and excluding ./run direcory..." | tee -a ${LOGFI
 # so --exlude=run actually means --exclude=$outdir_full/pipelinerun_v${pipeline_version}/run!
 tar --exclude="*.bam" --exclude="*.bai" --exclude=run -czvf ${sitename}_${dataset_name}_${date_today_long}.pipelinerun_v${pipeline_version}.tar.gz  "$out_dir/pipelinerun_v${pipeline_version}" | tee -a ${LOGFILE}
 echo "Done" | tee -a ${LOGFILE}
+# move tarred file to output directory that was tarred
+mv ${sitename}_${dataset_name}_${date_today_long}.pipelinerun_v${pipeline_version}.tar.gz $out_dir/pipelinerun_v${pipeline_version}/
 
 # now upload the output to Helmholtz Nextcloud, if -u was set to true
-if [ $upload == true ]; then
+if [[ $upload == true ]]; then
 	echo "We will now upload output to Helmholtz secure folder" | tee -a ${LOGFILE}
-	$work_dir/file_sharing/cloudsend.sh ${sitename}_${dataset_name}_${date_today_long}.pipelinerun_v${pipeline_version}.tar.gz $upload_link 2>&1 | tee -a ${LOGFILE} # redirect output of shellscript to logfile
+	$script_dir/src/cloudsend.sh $out_dir/pipelinerun_v${pipeline_version}/${sitename}_${dataset_name}_${date_today_long}.pipelinerun_v${pipeline_version}.tar.gz $upload_link 2>&1 | tee -a ${LOGFILE} # redirect output of shellscript to logfile
 fi
 
 # end
