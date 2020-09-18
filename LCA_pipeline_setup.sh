@@ -334,7 +334,7 @@ fi
 
 # CREATE CONDA ENVIRONMENT, if $create_env == true:
 
-path_to_env="$conda_envs_dir/cr3-velocyto-scanpy"
+path_to_env="${conda_envs_dir}cr3-velocyto-scanpy"
 
 if [ "$create_env" == "true" ]; then
 	echo "Creating conda environment in ${path_to_env}... NOTE! This can take a few hours..." | tee -a ${LOGFILE}
