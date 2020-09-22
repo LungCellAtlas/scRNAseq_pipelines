@@ -349,13 +349,40 @@ fi
 # BUILD REFERENCE GENOME, if $build_ref_genome == true:
 
 if [ "$build_ref_genome" == "true" ]; then
-	# activate environment. Since the command conda activate doesn't (always?) work
-	# in subshell, we first want to use source to make the command available:
-	path_to_conda_sh=$(conda info --base)/etc/profile.d/conda.sh
-	source $path_to_conda_sh 
-	# now we can activate environment
-	echo "Activating environment...." | tee -a ${LOGFILE}
-	conda activate $path_to_env # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
+	# store conda version:
+	conda_version_long=`conda --version`
+	# remove "conda " prefix if it's there
+	prefix="conda "
+	conda_version=${conda_version_long#"$prefix"}
+	# now see if version is greater/smaller than or equal to 4.6 for conda --base command:
+	min_version="4.6"
+	if `$script_dir/src/versiontester.sh $conda_version $min_version '>'` || `$script_dir/src/versiontester.sh $conda_version $min_version '='`; then
+        # activate environment prep. Since the command conda activate doesn't (always?) work
+		# in subshell, we first want to use source to make the command available:
+		echo "running source [path to conda.sh]..." | tee -a ${LOGFILE}
+		path_to_conda_sh=$(conda info --base)/etc/profile.d/conda.sh
+		source $path_to_conda_sh 
+	elif $script_dir/src/versiontester.sh $conda_version $min_version '<'; then
+	    # do nothing?
+	    :
+	else
+        echo "conda version checker did not work properly. Exiting." | tee -a ${LOGFILE}
+        exit 0
+	fi
+	# conda environment activation works differently before and after version 4.4
+	min_version="4.4"
+	if `$script_dir/src/versiontester.sh $conda_version $min_version '>'` || `$script_dir/src/versiontester.sh $conda_version $min_version '='`; then
+        # activate environment using conda activate
+        echo "Activating environment using conda activate..." | tee -a ${LOGFILE}
+		conda activate $path_to_env # this cannot be put into LOGFILE, because then the conda environment is not properly activated for some reason.
+	elif $script_dir/src/versiontester.sh $conda_version $min_version '<'; then
+	    # activate environment using source activate
+	    echo "Activating environment using source activate..." | tee -a ${LOGFILE}
+	    source activate $path_to_env 
+	else
+        echo "conda version checker did not work properly. Exiting." | tee -a ${LOGFILE}
+        exit 0
+	fi
 	# now start building the reference genome!
 	# create (if not there yet) and cd into refgenomes folder;
 	if ! [ -d refgenomes ]; then
