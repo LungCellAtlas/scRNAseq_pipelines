@@ -282,9 +282,12 @@ if [ "${download}" == "true" ]
   wget "ftp://ftp.ensembl.org/pub/release-${ensrel}/fasta/${species}/dna/CHECKSUMS" -O CHECKSUMS_FASTA
   # Test checksum
   sum_fa=`sum "genome.fa.gz"`
-  valfa=`grep "$sum_fa ${species^}.${genomestring}.dna.primary_assembly.fa.gz" CHECKSUMS_FASTA | wc -l`
+  # look for a line containing 1) [checksum][space][filename] or 2) [checksum][tab][filename]
+  # this apparently is not consistent over CHECKSUM files
+  valfa_1=`grep "$sum_fa ${species^}.${genomestring}.dna.primary_assembly.fa.gz" CHECKSUMS_FASTA | wc -l`
+  valfa_2=`grep "$sum_fa$(printf '\t')${species^}.${genomestring}.dna.primary_assembly.fa.gz" CHECKSUMS_FASTA | wc -l`
 
-  if [[ ${valfa} != "1" ]] 
+  if [[ ${valfa_1} != "1" ]] && [[ ${valfa_2} != "1" ]];
     then
     echo "ERROR: Checksum $sum_fa ${species^}.${genomestring}.dna.primary_assembly.fa.gz not found in CHECKSUMS_FASTA file, exit." | tee -a ${LOGFILE}
     exit 1
@@ -312,9 +315,11 @@ if [ "${download}" == "true" ]
     wget "ftp://ftp.ensembl.org/pub/release-${ensrel}/fasta/${species2}/dna/CHECKSUMS" -O CHECKSUMS_FASTA
     # Test checksum
     sum_fa=`sum "genome2.fa.gz"`
-    valfa=`grep "$sum_fa ${species2^}.${genomestring2}.dna.primary_assembly.fa.gz" CHECKSUMS_FASTA | wc -l`
-
-    if [[ ${valfa} != "1" ]] 
+    # look for a line containing 1) [checksum][space][filename] or 2) [checksum][tab][filename]
+    # this apparently is not consistent over CHECKSUM files
+    valfa_1=`grep "$sum_fa ${species2^}.${genomestring2}.dna.primary_assembly.fa.gz" CHECKSUMS_FASTA | wc -l`
+    valfa_2=`grep "$sum_fa$(printf '\t')${species2^}.${genomestring2}.dna.primary_assembly.fa.gz" CHECKSUMS_FASTA | wc -l`
+    if [[ ${valfa_1} != "1" ]] && [[ ${valfa_2} != "1" ]];
       then
       echo "ERROR: Checksum $sum_fa ${species2^}.${genomestring2}.dna.primary_assembly.fa.gz not found in CHECKSUMS_FASTA file, exit." | tee -a ${LOGFILE}
       exit 1
@@ -335,9 +340,11 @@ if [ "${download}" == "true" ]
 
   # Test checksum
   sum_gtf=`sum "annotation.gtf.gz"`
-  valgtf=`grep "${species^}.${genomestring}.${ensrel}.gtf.gz" CHECKSUMS_GTF | wc -l`
-
-  if [[ ${valgtf} != "1" ]] 
+  # look for a line containing 1) [checksum][space][filename] or 2) [checksum][tab][filename]
+  # this apparently is not consistent over CHECKSUM files
+  valgtf_1=`grep "$sum_gtf ${species^}.${genomestring}.${ensrel}.gtf.gz" CHECKSUMS_GTF | wc -l`
+  valgtf_2=`grep "$sum_gtf$(printf '\t')${species^}.${genomestring}.${ensrel}.gtf.gz" CHECKSUMS_GTF | wc -l`
+  if [[ ${valgtf_1} != "1" ]] && [[ ${valgtf_2} != "1" ]];
     then
     echo "ERROR: Checksum $sum_gtf ${species^}.${genomestring}.${ensrel}.gtf.gz not found in CHECKSUMS_GTF file, exit." | tee -a ${LOGFILE}
     exit 1
@@ -366,9 +373,10 @@ if [ "${download}" == "true" ]
 
     # Test checksum
     sum_gtf=`sum "annotation2.gtf.gz"`
-    valgtf=`grep "${species2^}.${genomestring2}.${ensrel}.gtf.gz" CHECKSUMS_GTF | wc -l`
+    valgtf_1=`grep "$sum_gtf ${species2^}.${genomestring2}.${ensrel}.gtf.gz" CHECKSUMS_GTF | wc -l`
+    valgtf_2=`grep"$sum_gtf$(printf '\t')${species2^}.${genomestring2}.${ensrel}.gtf.gz" CHECKSUMS_GTF | wc -l`
 
-    if [[ ${valgtf} != "1" ]] 
+    if [[ ${valgtf_1} != "1" ]] && [[ ${valgtf_2} != "1" ]];
       then
       echo "ERROR: Checksum $sum_gtf ${species2^}.${genomestring2}.${ensrel}.gtf.gz not found in CHECKSUMS_GTF file, exit." | tee -a ${LOGFILE}
       exit 1
