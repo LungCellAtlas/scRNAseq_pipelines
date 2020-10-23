@@ -266,8 +266,8 @@ if ! [ -f $path_to_sample_table ]; then
 fi
 
 
-# store pwd as script_dir:
-script_dir=`pwd`
+# store path where current script is located as script_dir
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # cd into output directory
 cd $out_dir
@@ -345,11 +345,6 @@ fi
 # now run nextflow command:
 echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${LOGFILE}
 # run nextflow from subshell, so that we can still push it to bg if we want, and store the output
-# nfcommand="nextflow run $script_dir/src/sc_processing_r7.nf -profile $profile -c $script_dir/src/nextflow.config --outdir $out_dir/pipelinerun_v${pipeline_version}/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg $nf_add_arguments"
-# echo "Nextflow command: ${nfcommand}"
-# (
-# ${nfcommand}
-# ) | tee -a ${LOGFILE}
 (
 nextflow run $script_dir/src/sc_processing_r7.nf -profile $profile -c $script_dir/conf/nextflow.config --outdir $out_dir/pipelinerun_v${pipeline_version}/ --samplesheet $path_to_sample_table --condaenvpath $conda_env_dir_path --localcores $localcores --localmemGB $localmemGB --samtools_thr $samtools_thr -bg "$nf_add_arguments"
 ) | tee -a ${LOGFILE}

@@ -169,7 +169,10 @@ done
 # move to next argument, and go through loop again:
 shift $((OPTIND -1))
 
+# store folder in which current script is located 
+test_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # store parent dir as script_dir
+cd ${test_dir}
 cd ..
 script_dir=`pwd`
 

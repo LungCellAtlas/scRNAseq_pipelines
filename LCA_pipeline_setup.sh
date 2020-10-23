@@ -239,8 +239,8 @@ fi
 
 # CREATE LOG AND PRINT PARAMETERS
 
-# store current path as script_dir
-script_dir=`pwd`
+# store path where current script is located as script_dir
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # cd into workpath and store full path (wihtout trailing slash)
 cd $work_dir
