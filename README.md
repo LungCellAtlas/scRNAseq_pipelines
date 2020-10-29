@@ -85,8 +85,7 @@ We will also give a brief outline here. The script requires the following argume
 - e: path to conda environment that was created during pipeline setup, it should have the name "cr3-velocyto-scanpy"
 - s: sitename (name of site where data was generated, e.g. SANGER or HELMHOLTZ)
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
-- l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.
-Optional argument specifing output dir:
+- l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.  
 - o: path to output directory
 - w: path to working directory in which the pipeline was set up with the setup script
 Optional arguments specifying resources (check default settings in function documentation):  
@@ -129,8 +128,6 @@ We will give a brief outline of the arguments here as well, partly overlapping w
 - x: path to the sample table file (.tsv, .xls, etc.) that contains the required sample info
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
 - l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.
-
-Optional argument specifying output dir
 - o: path to output directory in which to store pipeline output
 
 Optional arguments specifying resources (check default settings in function documentation):  
