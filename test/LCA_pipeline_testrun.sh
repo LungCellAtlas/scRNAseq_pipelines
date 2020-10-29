@@ -351,7 +351,7 @@ if ! [ -z $queue ]; then
 	nf_add_arguments="--queue ${queue}"
 fi
 if ! [ -z "$ClusterOptions" ]; then
-	nf_add_arguments="${nf_add_arguments} --clusterOpt '${ClusterOptions}'"
+	nf_add_arguments="${nf_add_arguments}--clusterOpt '${ClusterOptions}'"
 fi
 # now run nextflow command:
 echo "Running nextflow command now, this will take a while.... Start time nf run: `date`" | tee -a ${LOGFILE}
