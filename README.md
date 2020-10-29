@@ -87,7 +87,8 @@ We will also give a brief outline here. The script requires the following argume
 - u: whether to automatically upload output (exluding .bam and .bai files) to Helmholtz storage. Set to either true or false.
 - l: the link needed for uploading the output files. It will be provided to you by your LCA contact person.  
 - o: path to output directory
-- w: path to working directory in which the pipeline was set up with the setup script
+- w: path to working directory in which the pipeline was set up with the setup script  
+
 Optional arguments specifying resources (check default settings in function documentation):  
 - c: number of cores for cellranger
 - m: memory to be used by cellranger in Gb
