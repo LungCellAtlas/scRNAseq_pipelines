@@ -49,11 +49,13 @@ usage() {
  		Mandatory arguments:
  		
  		-p <cluster|local> 		"Profile" for computation. Must be set to either 
- 						local or cluster. Use local if pipeline can be 
- 						run on current machine. Use cluster if jobs need 
- 						to be submitted to cluster within the script. 
- 						See -q and -C flag below for further explanation 
- 						about cluster profile.
+ 						local or cluster. Use local if alignment can be 
+ 						run on the same machine from which this script is run. 
+ 						Use cluster if the alignment job (one part of this
+ 						script) needs to be submitted to cluster separately.
+ 						That will then be done from within the script. 
+ 						See -q and -C flag below for further explanation about 
+ 						cluster profile.
  		
  		-e <path_to_conda_environment> 	Path to the directory of 
  						$env_name conda environment that was installed 
