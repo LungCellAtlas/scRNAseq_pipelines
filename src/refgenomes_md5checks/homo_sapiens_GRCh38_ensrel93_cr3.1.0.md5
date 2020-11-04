@@ -1,0 +1,17 @@
+9e6b9465dc708d92bf6d67e9c9fa9389  homo_sapiens_GRCh38_ensrel93_cr3.1.0/fasta/genome.fa
+d527f3eb6b664020cf4d882b5820056f  homo_sapiens_GRCh38_ensrel93_cr3.1.0/fasta/genome.fa.fai
+c00e3fb210b085bbe04023cf1b405c56  homo_sapiens_GRCh38_ensrel93_cr3.1.0/genes/genes.gtf
+d57b2ed04655d661b860b177875421d9  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/chrLength.txt
+5bb25def58f5ab73e05711b51aee01df  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/chrNameLength.txt
+c93ac05176d615ddec18a1faac7ef355  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/chrName.txt
+a117b5f64c14c8349efd5a01b67f89ba  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/chrStart.txt
+7e327f253f6873727fa774c1a5ae7b5e  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/exonGeTrInfo.tab
+b61bc3e34f80e199b7172ca03a7051a2  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/exonInfo.tab
+e51a4ecfe91d613a113d8ddc8ccc4493  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/geneInfo.tab
+6f778cf30bb4f654b42fa7b4c99652e2  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/Genome
+6006baaae0e02e9b560f1ef01c19a526  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/SA
+bec9c7c1fee71a3312dda37550b8d3a3  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/SAindex
+c9ca1c60b312577956b8957fd9470e93  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/sjdbInfo.txt
+c5ea59b7e9fd0f8f52e58e039f5b6706  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/sjdbList.fromGTF.out.tab
+2ae522d7bd0ffe27cc23130142b74879  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/sjdbList.out.tab
+11609f77698eedce75570aa761e4ed6c  homo_sapiens_GRCh38_ensrel93_cr3.1.0/star/transcriptInfo.tab

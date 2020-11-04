@@ -1,0 +1,7 @@
+# this checksum was made based on ensembl93 refgenome
+a7d8bbb138de738184c7748079059403  ../cellranger/sub_5k_pbmc_v3/count_matrices/filtered_feature_bc_matrix/barcodes.tsv
+6010c970f5df1e21e388c916cd6c36e9  ../cellranger/sub_5k_pbmc_v3/count_matrices/filtered_feature_bc_matrix/features.tsv
+89628f995fc2c18a8fd0af94e519e372  ../cellranger/sub_5k_pbmc_v3/count_matrices/filtered_feature_bc_matrix/matrix.mtx
+bf994f994561412303520a2fb3ac87f8  ../cellranger/sub_5k_pbmc_v3/count_matrices/raw_feature_bc_matrix/barcodes.tsv
+6010c970f5df1e21e388c916cd6c36e9  ../cellranger/sub_5k_pbmc_v3/count_matrices/raw_feature_bc_matrix/features.tsv
+003531bd569c9238a7b54b69bc6585d7  ../cellranger/sub_5k_pbmc_v3/count_matrices/raw_feature_bc_matrix/matrix.mtx

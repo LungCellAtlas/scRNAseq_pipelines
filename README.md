@@ -73,7 +73,7 @@ $ ./LCA_pipeline_setup.sh -w /users/lisa.sikkema/LCA_scRNAseq_pipeline -u 1234:5
 ### testrun the installed pipeline:  
 
 We made a testrun script [LCA_pipeline_testrun.sh](test/LCA_pipeline_testrun.sh) with a small toy dataset from https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_v3 (downloaded automatically during pipeline setup above) to make sure 
-that your pipeline works as expected. (Note that this testrun is designed for the pipeline __excluding__ SARS-cov2 in the reference genome.) The script can be run with only one line in terminal, and should take between half an hour and a few hours to run (depending on your computing resources).
+that your pipeline works as expected. __Note__ that this testrun is designed for the pipeline with the default reference genome and cell ranger version, excluding SARS-cov2 in the reference genome. The script can be run with only one line in terminal, and should take between half an hour and a few hours to run (depending on your computing resources).
 It runs the entire pipeline on the toy data, and includes an option to transfer the output files, exluding .bam and .bai files, to a secure storage at the Helmholtz Center in Munich, Germany.  
 
 Detailed documentation on how to use the script is available under 

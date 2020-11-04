@@ -3,7 +3,7 @@
 # D: run Lung Cell Atlas cellranger pipeline
 
 # LCA pipeline version:
-pipeline_version="0.1.0"
+pipeline_version="1.0.0"
 
 # parameter defaults: 
 

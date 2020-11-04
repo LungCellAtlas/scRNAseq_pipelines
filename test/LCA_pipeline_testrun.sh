@@ -3,7 +3,7 @@
 # D: testrun Lung Cell Atlas cellranger pipeline
 
 # LCA pipeline version:
-pipeline_version="0.1.0"
+pipeline_version="1.0.0"
 
 # parameter defaults: 
 
@@ -372,7 +372,7 @@ fi
 # check md5sum of output .mtx, and barcodes and features .tsvs. (h5 and h5ad have timestamps and therefore
 # cannot be used for checksums. Loom files also get prefix in indices)
 echo "We will now do an md5sum check on cellranger output:" | tee -a ${LOGFILE}
-md5sum -c $work_dir/testdata/CHECKSUM_testrun | tee -a ${LOGFILE}
+md5sum -c $script_dir/test/CHECKSUM_testrun.md5 | tee -a ${LOGFILE}
 
 # move back to out_dir
 cd $out_dir

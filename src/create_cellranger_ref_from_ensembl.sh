@@ -9,7 +9,7 @@ VERSION="1.1"
 # Parameters defaults
 
 # Ensembl release
-ensrel="99"
+ensrel="93"
 # Genome string
 genomestring="GRCh38"
 # species
@@ -115,7 +115,6 @@ done
 shift $((OPTIND - 1))
 
 
-# LISA, test this part:
 if ! [ -d $outdir ]; then
   echo "the provided outdir (-o flag) is not a directory. Exiting."
   exit 1
@@ -420,7 +419,8 @@ eval ${mkgtfcmd} >> ${LOGFILE} 2>&1
 # Check
 if [ "$?" -ne "0" ]
   then
-    echo "Error: There was an error running cellranger mkgtf" | tee -a ${LOGFILE}
+    echo "Error: There was an error running cellranger mkgtf. Exiting." | tee -a ${LOGFILE}
+    exit 1
 fi
 
 
@@ -456,8 +456,8 @@ if [[ ${genomestring2} != "" ]]
   # Check
   if [ "$?" -ne "0" ]
     then
-      echo "Error: There was an error running cellranger mkgtf" | tee -a ${LOGFILE}
-      #exit 1
+      echo "Error: There was an error running cellranger mkgtf. Exiting." | tee -a ${LOGFILE}
+      exit 1
   fi
 
 fi
@@ -495,8 +495,8 @@ eval ${mkrefcmd} >> ${LOGFILE} 2>&1
 # Check
 if [ "$?" -ne "0" ]
   then
-    echo "Error: There was an error running cellranger mkref" | tee -a ${LOGFILE}
-    #exit 1
+    echo "Error: There was an error running cellranger mkref. Exiting." | tee -a ${LOGFILE}
+    exit 1
 fi
 
 # File cleanup

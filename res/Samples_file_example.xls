@@ -1,2 +1,2 @@
 Sample	ncells	fastqpath	refindex	refgtf	chemistry
-sub_5k_pbmc_v3	5000	/home/lisa/LCA/scRNAseq_pipelines/testdata/	/home/lisa/LCA/scRNAseq_pipelines/refgenomes/homo_sapiens_GRCh38_ensrel99_cr3.1.0	/home/lisa/LCA/scRNAseq_pipelines/refgenomes/homo_sapiens_GRCh38_ensrel99_cr3.1.0/genes/genes.gtf	SC3Pv3
+sub_5k_pbmc_v3	5000	/home/lisa/LCA/scRNAseq_pipelines/testdata/	/home/lisa/LCA/scRNAseq_pipelines/refgenomes/homo_sapiens_GRCh38_ensrel93/homo_sapiens_GRCh38_ensrel93_cr3.1.0	/home/lisa/LCA/scRNAseq_pipelines/refgenomes/homo_sapiens_GRCh38_ensrel93/homo_sapiens_GRCh38_ensrel93_cr3.1.0/genes/genes.gtf	SC3Pv3

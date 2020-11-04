@@ -3,12 +3,12 @@
 # D: download files, set up conda environment and build reference genome for Lung Cell Atlas cellranger pipeline
 
 # version of pipeline
-pipeline_version="0.1.0"
+pipeline_version="1.0.0"
 
 # parameter defaults: 
 
 # Ensembl release
-ensrel="99"
+ensrel="93"
 # Genome string
 genomestring="GRCh38"
 # species
@@ -86,7 +86,8 @@ usage() {
 					[work_dir]/refgenomes/ directory matching with the 
 					specified species, ensembl_release and genome_release 
 					will be removed. If set to false, the necessary 
-					downloaded files should be present in your refgenomes 
+					downloaded files should be present in your 
+					refgenomes/${species}_${genomestring}_ensrel${ensrel}
 					folder. (default: ${download_ensembl_files})
 
 		Optional argument to include Sars-CoV2 in the reference genome:
@@ -277,7 +278,7 @@ fi
 # and for build_ref_genome
 if [ "$build_ref_genome" == "true" ]; then
 	echo "building of reference genome will be included" | tee -a ${LOGFILE}
-	if [ "$download_files" == "false" ]; then
+	if [ "$download_ensembl_files" == "false" ]; then
 		echo "download of files from ensembl needed for refgenome building will be skipped." | tee -a ${LOGFILE}
 	fi
 	if [ "$incl_sarscov2" == "true" ]; then
@@ -389,38 +390,45 @@ if [ "$build_ref_genome" == "true" ]; then
 		mkdir refgenomes
 	fi
 	cd refgenomes
+	# create/cd into folder that corresponds to our species and genome version, so that no mixing of versions is possible
+	genome_name=${species}_${genomestring}_ensrel${ensrel}
+	if ! [ -d $genome_name ]; then
+		mkdir $genome_name
+	fi
+	cd $genome_name
+
 	echo "Currently working in folder `pwd`" | tee -a ${LOGFILE}
 	# now run the script to build the genome:
 	echo "We will now start building the reference genome, using the script $script_dir/src/create_cellranger_ref_from_ensembl.sh" | tee -a ${LOGFILE}
 	echo "This might take a few hours. Start time: `date`" | tee -a ${LOGFILE}
-	echo "For a detailed log of the genome building, check out the logfile in your ${work_dir}/refgenomes folder!" | tee -a ${LOGFILE}
+	echo "For a detailed log of the genome building, check out the logfile in your ${work_dir}/refgenomes/${genome_name} folder!" | tee -a ${LOGFILE}
 	if [ "$incl_sarscov2" == "false" ]; then
 		if [ "$download_ensembl_files" == "true" ]; then
 			# -d default true, u true
-			${script_dir}/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -o ${work_dir}/refgenomes | tee -a ${LOGFILE}
+			${script_dir}/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -o ${work_dir}/refgenomes/${genome_name} | tee -a ${LOGFILE}
 		else
 			# -d to false
-			${script_dir}/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -d false -o ${work_dir}/refgenomes | tee -a ${LOGFILE}
+			${script_dir}/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -d false -o ${work_dir}/refgenomes/${genome_name} | tee -a ${LOGFILE}
 		fi
 		# check md5sum if default parameters were used:
-		if [ "${genomestring}" == "GRCh38" ] && [ "${ensrel}" == "99" ] && [ "${species}" == "homo_sapiens" ] && [ "${expectedcrv}" == "3.1.0" ]; then
+		if [ "${genomestring}" == "GRCh38" ] && [ "${ensrel}" == "93" ] && [ "${species}" == "homo_sapiens" ] && [ "${expectedcrv}" == "3.1.0" ]; then
 			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
-			md5sum -c $script_dir/src/refgenomes_md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0.md5 | tee -a ${LOGFILE}
+			md5sum -c $script_dir/src/refgenomes_md5checks/homo_sapiens_GRCh38_ensrel93_cr3.1.0.md5 | tee -a ${LOGFILE}
 		fi
 	elif [ "$incl_sarscov2" == "true" ]; then
 		echo "Including Sars-cov2 genome into the reference..." | tee -a ${LOGFILE}
 		if [ "$download_ensembl_files" == "true" ]; then
 			# -d default true, u true
-			$script_dir/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f $script_dir/res/sars_cov2_genome/sars_cov2_genome.gtf -a $script_dir/res/sars_cov2_genome/sars_cov2.fasta -o ${work_dir}/refgenomes | tee -a ${LOGFILE}
+			$script_dir/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -u true -n sars_cov2 -f $script_dir/res/sars_cov2_genome/sars_cov2_genome.gtf -a $script_dir/res/sars_cov2_genome/sars_cov2.fasta -o ${work_dir}/refgenomes/${genome_name} | tee -a ${LOGFILE}
 		else
 			# -d to false
-			$script_dir/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -d false -n sars_cov2 -f $script_dir/res/sars_cov2_genome/sars_cov2_genome.gtf -a $script_dir/res/sars_cov2_genome/sars_cov2.fasta -o ${work_dir}/refgenomes | tee -a ${LOGFILE}
+			$script_dir/src/create_cellranger_ref_from_ensembl.sh -e ${ensrel} -g ${genomestring} -s ${species} -c ${expectedcrv} -t ${nthreads} -m ${memgb} -d false -n sars_cov2 -f $script_dir/res/sars_cov2_genome/sars_cov2_genome.gtf -a $script_dir/res/sars_cov2_genome/sars_cov2.fasta -o ${work_dir}/refgenomes/${genome_name} | tee -a ${LOGFILE}
 		fi
-		# check md5sum if default parameters were used:
-		if [ ${genomestring} == "GRCh38" ] && [ "${ensrel}" == "99" ] && [ "${species}" == "homo_sapiens" ] && [ "${expectedcrv}" == "3.1.0" ]; then
-			echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
-			md5sum -c $script_dir/src/refgenomes_md5checks/homo_sapiens_GRCh38_ensrel99_cr3.1.0_sars_cov2.md5 | tee -a ${LOGFILE}
-		fi
+		# # check md5sum if default parameters were used (didn't generate the checksum file for ensemble 93 yet):
+		# if [ ${genomestring} == "GRCh38" ] && [ "${ensrel}" == "93" ] && [ "${species}" == "homo_sapiens" ] && [ "${expectedcrv}" == "3.1.0" ]; then
+		# 	echo "Checking md5sum of output folder..." | tee -a ${LOGFILE}
+		# 	md5sum -c $script_dir/src/refgenomes_md5checks/homo_sapiens_GRCh38_ensrel93_cr3.1.0_sars_cov2.md5 | tee -a ${LOGFILE}
+		# fi
 	fi
 	echo "End time: `date`" | tee -a ${LOGFILE}
 fi
