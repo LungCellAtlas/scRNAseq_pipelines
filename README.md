@@ -1,14 +1,14 @@
 ## Why a Lung Cell Atlas scRNAseq pipeline?
 
-The single cell data for the Lung Cell Atlas is generated in a wide variety of centers, at different moments in time, and is preprocessed with different pipelines. For the comprehensive analysis of the Lung Cell Atlas datasets, we would like to process all data in a uniform manner, thus eliminating differences between the datasets due to differences in data processing. Since we often cannot freely share fastq files between centers because of data protection legislation, it is impossible to gather all the sequencing data at one center and run the same pipeline on all data there. Hence we built a stable pipeline with fixed software and versioning that can be easily installed at any institute, on any linux machine, that processes fastqs into count matrices with only one command in the command line. The output count matrices can then be shared, thereby avoiding sharing of private fastqs or bam files. Thus our pipeline will enable harmonization of data processing between research centers for the Lung Cell Atlas.
+The single cell data for the Lung Cell Atlas is generated in a wide variety of centers, at different moments in time, and is preprocessed with different pipelines. For the comprehensive analysis of the Lung Cell Atlas datasets, we would like to process all data in a uniform manner, thus eliminating differences between the datasets due to differences in data processing. Since we often cannot freely share fastq files between centers because of data protection legislation, it is impossible to gather all the sequencing data at one center and run the same pipeline on all data there. Hence we built a stable pipeline with fixed software and versioning that can be easily installed at any institute, on any linux machine, that processes fastqs into count matrices with only one command in the command line. The output count matrices can then be shared, thereby avoiding sharing of private fastqs or bam files. Our pipeline will thus enable harmonization of data processing between research centers for the Lung Cell Atlas.
 
 ## Pipeline description
-The pipeline has been developed by the [Bioinformatics Core Facility](https://www.helmholtz-muenchen.de/bi) at HMGU using [nextflow](https://www.nextflow.io) and [DolphinNext](https://dolphinnext.readthedocs.io/).  
+The pipeline has been developed by the [Bioinformatics Core Facility](https://www.helmholtz-muenchen.de/bi) at the Helmholtz Center Munich using [nextflow](https://www.nextflow.io) and [DolphinNext](https://dolphinnext.readthedocs.io/).  
 Nextflow has been developed to create reproducible and transferable computational workflows and supports many executors (e.g. slurm, sge).  
 To distribute the tools used by the pipeline, we use the package management system [conda](https://docs.conda.io/en/latest/).  
 
 This pipeline performs basic analysis of sc RNA-Seq data generated using the [10X genomics](https://support.10xgenomics.com/single-cell-gene-expression) protocol.  
-It produces gene x cell count matrices using the [Cell Ranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) software. 
+It produces cell x gene count matrices using the [Cell Ranger](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) software. 
 In addition matrices for RNA velocity analysis are created using [velocyto](https://velocyto.org/velocyto.py/index.html) and ready to use AnnData objects for [Scanpy](https://scanpy.readthedocs.io) are created.
 
 <img src="./res/LCA_pipeline.jpg" alt="Pipeline overview" width="750"/>   
@@ -152,4 +152,4 @@ Submit an issue on this GitHub page.
 Toy data for testrun are a subselection from the following 10X dataset: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_v3  
 The Licence for the Cellranger package is included in the local conda package in the tar file.  
 The Licence of the nextflow pipeline and the "create_cellranger_ref_from_ensembl.sh" script is available from sc_processing_cellranger/nfpipeline/LICENCE (MIT license)  
-
+We thank Thomas Walzthoeni for bioinformatics support provided at the Bioinformatics Core Facility, Institute of Computational Biology, Helmholtz Zentrum München.
