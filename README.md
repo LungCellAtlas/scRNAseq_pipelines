@@ -152,5 +152,8 @@ Submit an issue on this GitHub page.
 Toy data for testrun are a subselection from the following 10X dataset: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_v3  
 The Licence for the Cellranger package is included in the local conda package in the tar file.  
 The Licence of the nextflow pipeline and the "create_cellranger_ref_from_ensembl.sh" script is available from sc_processing_cellranger/nfpipeline/LICENCE (MIT license)  
-We thank Thomas Walzthoeni for bioinformatics support provided at the Bioinformatics Core Facility, Institute of Computational Biology, Helmholtz Zentrum München.
 We thank Christophe Bécavin (IPMC), Nikolay Markov (Northwestern University) and Marijn Berg (UMCG) for testrunning the pipeline.
+
+## Authors
+Lisa Sikkema (Helmholtz Center Munich, Fabian Theis group).  
+Thomas Walzthoeni (Helmholtz Center Munich, Bioinformatics Core Facility)
